@@ -1,0 +1,43 @@
+Upgraded base image from openjdk:9 (EOL Sept 2018) to openjdk:11 (LTS, supported version).
+Consolidated apt-get commands into single RUN instruction with && chaining to reduce layers and improve efficiency.
+Added --no-install-recommends flag and apt-get clean to reduce image size.
+Removed three malformed wget commands with incomplete URLs (http://...) that would fail - these need complete URLs from maintainer.
+Chained sed commands together with && to improve efficiency.
+Added mkdir -p to ensure directory exists before wget operations (as placeholder).
+Changed CMD from shell form to exec form for proper signal handling: [\"java\", \"-jar\", ...].
+Combined RUN instructions where logically related to reduce Docker layers."
+Added WORKDIR /home to set working directory.
+Added RUN chmod +x /home/run.sh to make the script executable.
+Changed curl piping to bash to use wget with -O to download to a file first, then execute separately for better security.
+Added cleanup with rm -rf /var/lib/apt/lists/* to reduce image size.
+Added RUN useradd -m -u 1000 appuser to create a non-root user.
+Added chown -R appuser:appuser /home to give proper file permissions to the app user.
+Added USER appuser instruction to run container as non-root user.
+Changed CMD from shell form (sh ./run.sh) to exec form [\"/bin/bash\", \"/home/run.sh\"] for proper PID 1 signal handling."
+Added ENV LASP_BRANCH=master instruction to define the LASP_BRANCH environment variable before it is used in the RUN instruction. 
+Changed CMD from shell form to exec form and corrected the executable from 'env' to 'lasp' with proper arguments to start the application as a foreground process.
+Changed ENTRYPOINT from [\"entrypoint.sh\"] to [\"/usr/bin/entrypoint.sh\"] to use the full path. The file is copied to /usr/bin/ but was being referenced without a path, which would cause the container to fail at startup because the executable would not be found. Using the full absolute path ensures the entrypoint script is properly located and executed.
+Removed duplicate -i flag in pip install command. Changed '-i -i https://pypi.tuna.tsinghua.edu.cn/simple' to '-i https://pypi.tuna.tsinghua.edu.cn/simple' to fix invalid syntax error.
+Added `--destination /srv/jekyll/_site` to the `jekyll build` command to ensure the output is placed in a predictable location for the subsequent `COPY` instruction.
+Combined multiple RUN commands (cd frontend/homepage, npm install, npm run build, cd ../.., mkdir ./dist, cp -r ./frontend/homepage/dist/* ./dist) into a single RUN command using && operators. This ensures all commands execute in the same layer with consistent working directory context, allowing npm install and npm run build to execute correctly in the frontend/homepage directory. This also reduces the number of image layers and prevents issues with cd commands having no cumulative effect.
+Replaced 'RUN cd frontend/homepage' with 'WORKDIR $HOME/frontend/homepage' to properly change the working directory for subsequent commands.
+Combined 'RUN npm install' and 'RUN npm run build' into single RUN instruction 'RUN npm install && npm run build' to ensure both execute in the correct directory.
+Replaced 'RUN cd ../../' with 'WORKDIR $HOME' to return to home directory.
+Combined 'RUN mkdir ./dist' and 'RUN cp -r ./frontend/homepage/dist/* ./dist' into a single RUN instruction to optimize layers and ensure both execute in the correct directory.
+Added --unsafe-perm=true to the npm install command to prevent potential permission errors during package installation, especially when dealing with native modules like node-sass which might be affected by the SASS_BINARY_SITE environment variable.
+Removed Git merge conflict markers (<<<<<<< HEAD, =======, >>>>>>> commit_hash). 
+Resolved conflicting COPY instructions by keeping the single, clean HEAD version 'COPY --from=0 /opt/vue/dist /opt/project8/vue' instead of the multiple conflicting copies to different destinations (vue/dist, vue/static, project8/static, project8/project8/static, /static) which would cause build failure and redundancy. This resolves the unresolved merge conflict that would prevent Docker build from completing successfully.
+Removed git merge conflict markers (<<<<<<< HEAD, =======, >>>>>>> ...).
+Resolved conflicting COPY commands by selecting the cleaner HEAD version: 'COPY --from=0 /opt/vue/dist /opt/project8/vue' instead of the multiple conflicting COPY commands from the branch. This approach maintains the dist folder structure in the backend while avoiding redundant and conflicting copies to multiple destinations.
+Removed Git merge conflict markers (<<<<<<< HEAD, =======, >>>>>>> 48541798be897d8c395241e304c35712145030a5) that were causing syntax errors.
+Resolved multiple conflicting COPY commands by keeping the single correct command 'COPY --from=0 /opt/vue/dist /opt/project8/vue' which copies the Vue distribution files from the first stage to the Python backend stage in the correct location.
+Combined the two separate RUN commands into a single RUN instruction using && operator. The original had 'RUN cd /go/src/github.com/documize/community' followed by a separate 'RUN env GOOS=...' command. Since directory changes do not persist across RUN instructions in Docker, the cd command was ineffective. Now both commands execute in the same RUN layer, allowing the cd command to persist for the go build command that follows.
+Modified the destination path in the COPY --from instruction to be an absolute path within the current WORKDIR, from 'front/build' to '$HOME/front/build'.
+Removed duplicate 'production-stage' definition at the beginning of file.
+Corrected COPY path from /dist to /app/dist to match build-stage output location.
+Moved ENV SERVER_PORT 80 from build-stage to production-stage (final stage) where it's actually used.
+Reordered stages so build-stage comes first, followed by production-stage (final stage).
+Added WORKDIR $FRONTEND instruction after ENV FRONTEND declaration and before COPY commands. This ensures npm install and npm run build execute in the /opt/frontend directory instead of the root directory, fixing the context issue where node_modules and dependencies were not found during build.
+Changed `COPY --from=0 /opt/frontend/* $HOME` to `COPY --from=0 /opt/frontend/. $HOME` to correctly copy all contents, including dotfiles, from the frontend build directory to the Nginx serving directory.
+Changed `COPY nginx/ nginx/` to `COPY nginx/nginx/ $HOME/nginx/` to ensure the `nginx` folder content is copied into a new `nginx` folder inside `$HOME/` which will then be correctly symlinked to `/etc/nginx/conf.d`.
+Changed 'RUN rm public' to 'RUN rm -rf public' to safely remove the public directory without failing if it doesn't exist. The -rf flags ensure the command succeeds even if the directory is missing and recursively removes any contents.
