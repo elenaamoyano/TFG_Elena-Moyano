@@ -1,0 +1,803 @@
+{
+  "name": "PRUEBA_10.2-VALIDACIÓN-(conf)",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "anthropic/claude-haiku-4.5",
+        "options": {
+          "maxTokens": 2500,
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        1088
+      ],
+      "id": "7d0a1d15-0d31-4c5d-9b75-503d6211ed79",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"status\": { \"type\": \"string\" },\n    \"file_name\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"changes\": { \"type\": \"string\" }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -800,
+        1088
+      ],
+      "id": "acaad1c4-38e2-4776-92cf-15e2a1bc6251",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search the web using Serper API.\nCall this tool with a 'query' parameter. Example: { \"query\": \"nginx magic_feature\" }",
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "num": 5
+      },
+      "type": "n8n-nodes-serper-search.serperTool",
+      "typeVersion": 1,
+      "position": [
+        160,
+        1600
+      ],
+      "id": "cdcbe1e4-a10b-4ae5-afeb-0e9efc05e6ff",
+      "name": "Serper1",
+      "credentials": {
+        "serperApi": {
+          "id": "aaEAZ3t6D2d7u8GE",
+          "name": "Serper account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8001/query",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        -944,
+        1136
+      ],
+      "id": "4c8314ec-e805-48e1-82df-fe4d57b1391a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert configuration file analyzer.\n\nFILE TO ANALYZE:\n{{ $json.prompt_for_detector }}\n\nINSTRUCTIONS:\nScan the file for REAL errors only (syntax, semantic, or logic issues). Do NOT suggest improvements or optimizations.\nFor each error found, provide a SHORT, KEYWORD-BASED description (max 20 words per error).\n\nCRITICAL RULES:\n- ALWAYS return a response immediately, never stop or retry.\n- If no errors are found, return suggested_errors as an empty array.\n- Return ONLY the JSON object, no extra text.\n\nRESPONSE FORMAT:\n{\n  \"file_name\": \"{{ $json.file_name }}\",\n  \"content\": the original configuration text (\"{{ $json.file_content }}\"\")\n  \"suggested_errors\": [\"error 1\", \"error 2\"]\n}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1920,
+        1360
+      ],
+      "id": "034a6233-cafe-423b-9ba0-add249fe861b",
+      "name": "DETECTOR"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-haiku-4.5",
+        "options": {
+          "maxTokens": 2500,
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -2000,
+        1568
+      ],
+      "id": "fc7a92eb-d8b3-470f-9247-821e7e2d250c",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"file_name\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"suggested_errors\": { \n      \"type\": \"array\", \n      \"items\": { \"type\": \"string\" }\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1744,
+        1568
+      ],
+      "id": "2d685ef1-1a10-44d9-bbd5-9134fb97075a",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash",
+        "options": {
+          "maxTokens": 2500,
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        32,
+        1600
+      ],
+      "id": "1bcadae1-72f3-4c7c-bbcf-71df01b67ff7",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"status\": { \"type\": \"string\" },\n    \"file_name\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"changes\": { \n      \"type\": \"array\", \n      \"items\": { \"type\": \"string\" }\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        1600
+      ],
+      "id": "0a791029-eed6-45fa-a153-42d5690c2566",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert in configuration file errors.\n\nSUGGESTED ERRORS:\n{{ $json.output.suggested_errors }}\n\nCONFIGURATION TO CORRECT:\n{{ $json.output.content }}\n\n===========================================\nINSTRUCTIONS\n===========================================\nSTEP 1 — Search Chroma\nCall http_request_tool with exactly this JSON format:\n{\n  \"query\": \"<first suggested error or short description>\",\n  \"collection\": \"config\"\n}\nExample of a valid call:\n{\n  \"query\": \"nginx missing closing brace events block\",\n  \"collection\": \"config\"\n}\nUse the first suggested error as query if unsure. Never leave query empty.\n\nSTEP 2 — Apply fixes\nUse Chroma results to guide corrections. If no useful results, use your own knowledge.\nThe corrected file must have the same functionality as the original, just without errors.\n\nSTEP 3 — Return result\nReturn ONLY this JSON, no extra text:\n{\n  \"status\": \"fixed\" or \"no_errors\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"complete corrected configuration\",\n  \"changes\": \"description of all changes made\"\n}\n\n===========================================\nCRITICAL RULES\n===========================================\n- ALWAYS return a response. Never leave it empty.\n- http_request_tool body: ONLY \"query\" and \"collection\" fields, both strings.\n- changes must be a single string in double quotes.\n- Return ONLY valid JSON, no extra text.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1024,
+        896
+      ],
+      "id": "8e09dc6b-1669-47f5-8de0-8224ab6d7d7b",
+      "name": "CORRECTOR-CHROMA",
+      "retryOnFail": true,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=CONFIGURATION TO ANALYZE:\n{{ $json.output.content }}\n\nCONTEXT:\nYou are an expert in configuration file errors.\n\nThis configuration has been marked as \"POTENTIAL ERROR\" because:\n- Our local knowledge base (Chroma) had no solution\n- OR the previous correction was incomplete\n\nYou are in a special workflow branch where your FIRST action MUST be to search the internet for information about this configuration.\n\nCRITICAL - EXACT FORMAT FOR TOOL CALLING:\nWhen you need to search, you MUST generate this EXACT JSON once (with no text before or after):\n\n{\"tool\":\"serper\",\"arguments\":{\"query\":\"your search query here\"}}\n\nReplace the query with specific terms based on:\n- The error type (from suggested_errors or detection)\n- The configuration content\n\nDo NOT explain anything. Do NOT say \"I'll search\". ONLY generate that JSON.\n\nTOOL NAME: serper\nPARAMETER: query (string)\n\nEXAMPLES OF GOOD QUERIES:\n\"nginx.conf proxy_pass syntax error solution\"\n\"mysql unknown variable log_bin_trust_function_creators\"\n\"apache htaccess Options override Syntax error\"\n\"docker-compose depends_on invalid service name\"\n\"php upload_max_filesize post_max_size mismatch\"\n\"postgresql max_connections out of range\"\n\"redis bind directive permission denied\"\n\nINSTRUCTIONS\nAfter the tool returns results:\n\n1. Analyze the search results carefully\n2. Extract the most relevant solution for the current error\n3. Apply the solution to the configuration\n4. Return the corrected configuration\n\nHANDLING CONFIGURATIONS WITH NO ERRORS\n1. If you determine that the configuration has NO ERRORS:\n   - Keep the configuration EXACTLY as it was\n   - Set \"status\": \"no_errors\"\n   - Leave \"content\" with the ORIGINAL configuration\n   - Set \"changes\" as an empty array []\n\n2. If you find ERRORS that need fixing:\n   - Fix ONLY the errors you identified\n   - Keep the original structure and indentation\n   - Set \"status\": \"fixed\"\n   - Provide the corrected configuration in \"content\"\n   - List the changes made in \"changes\" array\n\nCRITICAL RULES:\n- NEVER reorganize, reformat, or restructure unless fixing an error\n- If no errors are found, return the EXACT original configuration\n- Do NOT add comments, explanations, or modifications unless necessary\n\nRESPONSE FORMAT (JSON):\n{\n  \"status\": \"fixed\" or \"no_errors\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"complete configuration (corrected if errors found, ORIGINAL if no errors)\",\n  \"changes\": [\"list of changes made\"] or []\n}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        80,
+        1376
+      ],
+      "id": "1d443c8b-c562-4b68-8900-d71b3a3bb48f",
+      "name": "CORRECTOR-SERPER"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c71d521-56ba-4285-9b3d-f85ed1adc0aa",
+              "leftValue": "={{ $json.output.suggested_errors.length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1552,
+        1360
+      ],
+      "id": "8eb990af-64e9-4100-b072-7e9322e6506b",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2752,
+        864
+      ],
+      "id": "23041161-a11a-41c7-aa90-3d47aca983ac",
+      "name": "Loop Over Items5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a89a950d-07e7-4865-9963-b17a579aaff0",
+              "leftValue": "={{ $json.output.remaining_errors > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        896
+      ],
+      "id": "ed7c0525-437b-4564-9d4b-2ca9fdb2c4f3",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const outputAgente = $input.first().json.output;\n\nconst resultado = {\n  status: outputAgente.status || 'unknown',\n  file_name: outputAgente.file_name || '',\n  content: outputAgente.content || '',\n  changes: outputAgente.changes\n};\n\nreturn [{\n  json: resultado\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        880
+      ],
+      "id": "b26223ac-b8ab-4dea-827d-f75d3fce4234",
+      "name": "FORMATEADOR"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "corrected_files",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -2288,
+        512
+      ],
+      "id": "1137dcaa-fea0-4a8a-8c0e-a7d2fd4801df",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a verification agent specialized in configuration file errors. Your task is to examine a configuration that has already been processed by a correction agent and determine if it is now error-free.\n\nINPUT DATA STRUCTURE:\nYou will receive a JSON object with these exact fields:\n\n{\n  \"status\": \"{{ $json.output.status }}\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"{{ $json.output.content }}\",\n  \"changes\": {{ $json.output.changes }}\n}\n\n===========================================\nYOUR VERIFICATION TASK\n===========================================\n\n1. Analyze the configuration in the \"content\" field.\n\n2. Verify if the configuration is COMPLETELY error-free:\n   - Check syntax errors (missing semicolons, unbalanced braces)\n   - Check semantic errors (directives in wrong context, invalid parameters)\n   - Check logic errors (duplicate blocks, missing dependencies)\n   - DO NOT suggest improvements or optimizations, only detect actual errors\n\n===========================================\nOUTPUT FORMAT\n===========================================\n\nYou must return ONLY the JSON object, with NO explanations, NO analysis, NO additional text.\n\nCASE A: CONFIGURATION IS ERROR-FREE\n\nIf you find NO errors, return EXACTLY this:\n\n{\n  \"status\": \"verified\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"{{ $json.output.content }}\",\n  \"changes\": {{ $json.output.changes }},\n  \"verification_notes\": \"All errors have been successfully corrected\"\n}\n\nCASE B: CONFIGURATION STILL HAS ERRORS\n\nIf you find errors, return EXACTLY this:\n\n{\n  \"status\": \"needs_revision\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"{{ $json.output.content }}\",\n  \"remaining_errors\": [\n    \"error description 1 with line number\",\n    \"error description 2 with line number\"\n  ]\n}\n\n===========================================\nCRITICAL RULES\n===========================================\n\n- If configuration is error-free → return Case A\n- If errors still exist → return Case B\n- Do NOT invent errors that don't exist\n- Do NOT suggest improvements or optimizations\n- Be precise: include line numbers when possible\n- Each error description should be concise (max 15 words)\n- The original \"content\" must NEVER be modified\n- Return ONLY the JSON, no extra text\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -624,
+        896
+      ],
+      "id": "569f3814-f8c6-44bc-8175-d06c2f9fc9a7",
+      "name": "COMPROBADOR"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash",
+        "options": {
+          "maxTokens": 2500,
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        1136
+      ],
+      "id": "1249e068-bacc-47e9-97e6-1a7136b3a86c",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst outputText = input.output || '';\nlet jsonResult = null;\n\nconst jsonMatch = outputText.match(/```json\\s*([\\s\\S]*?)\\s*```/);\nif (jsonMatch) {\n    try {\n        jsonResult = JSON.parse(jsonMatch[1].trim());\n    } catch (e) {}\n}\n\nif (!jsonResult) {\n    const objectMatch = outputText.match(/\\{[\\s\\S]*\\}/);\n    if (objectMatch) {\n        try {\n            jsonResult = JSON.parse(objectMatch[0]);\n        } catch (e) {}\n    }\n}\n\nif (!jsonResult) {\n    return [{ json: { output: { error: 'No se pudo extraer JSON válido', raw_output: outputText } } }];\n}\n\nreturn [{ json: { output: {\n    status: jsonResult.status || 'unknown',\n    file_name: jsonResult.file_name || '',\n    content: jsonResult.content || '',\n    changes: jsonResult.changes || '',\n    verification_notes: jsonResult.verification_notes || '',\n    remaining_errors: jsonResult.remaining_errors || []\n}}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        896
+      ],
+      "id": "32c4a136-90e3-4749-93bf-05e338f85172",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3008,
+        816
+      ],
+      "id": "d5bf5391-81f9-458a-ae58-7a64aa59c79c",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst body = input.body || input;\n\nconst folderPath = body.folder_path || '';\nconst configFiles = body.config_files || [];\n\nconst items = configFiles.map(filename => ({\n    json: {\n        config_file: filename,\n        folder_path: folderPath\n    }\n}));\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4320,
+        816
+      ],
+      "id": "6ea4c058-68d7-4977-afe7-54f8b48009b8",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -4064,
+        816
+      ],
+      "id": "7b0c28d6-f002-4bc9-912e-fdd30ab0f31e",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "command": "={{ $json.comando }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -3568,
+        912
+      ],
+      "id": "32bf4ba1-9556-4493-a6ae-6d16231f442f",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst fileContent = input.stdout || '';\n\nreturn [{\n    json: {\n        config_content: fileContent,\n        config_file: $('Code in JavaScript17').first().json.config_file,\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3312,
+        912
+      ],
+      "id": "de19e2a2-8791-4619-b45f-060633ac0480",
+      "name": "Code in JavaScript16"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/eval",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -4560,
+        816
+      ],
+      "id": "0498d1b3-8a61-4c36-8bb7-183df5778cbc",
+      "name": "Webhook1",
+      "webhookId": "8580588c-7ad5-4b9e-be2e-e0bb9c38237b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nconst folderPath = input.folder_path || '';\nconst configFile = input.config_file || '';\n\nconst comando = `type \"${folderPath}\\\\${configFile}\"`;\n\nreturn [{\n    json: {\n        ...input,\n        comando: comando\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3856,
+        912
+      ],
+      "id": "9b1c0ddd-25e9-45b1-ab24-2f4feb5b7e55",
+      "name": "Code in JavaScript17"
+    },
+    {
+      "parameters": {
+        "jsCode": "const container = $input.first().json;\n\nconst fileName = container.config_file || '';\nconst fileContent = container.config_content || '';\n\n\nconst promptIndividual = `\n=== FILE CONFIGURATION ANALYSIS ===\n\nFile: ${fileName}\n\nCONFIGURATION TO ANALYZE:\n\\`\\`\\`\n${fileContent}\n\\`\\`\\`\n`;\n\nreturn [{\n  json: {\n    file_name: fileName,\n    file_content: fileContent,\n    prompt_for_detector: promptIndividual\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2208,
+        1200
+      ],
+      "id": "f9dfc56c-d2ac-4387-99f6-6399876af1ce",
+      "name": "Code in JavaScript11"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serper1": {
+      "ai_tool": [
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DETECTOR": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CORRECTOR-CHROMA": {
+      "main": [
+        [
+          {
+            "node": "COMPROBADOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CORRECTOR-SERPER": {
+      "main": [
+        [
+          {
+            "node": "FORMATEADOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items5": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "FORMATEADOR",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FORMATEADOR": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        []
+      ]
+    },
+    "COMPROBADOR": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "COMPROBADOR",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript17",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript16": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript17": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript11": {
+      "main": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6d8103c9-e523-45e0-a07c-68edce3a8197",
+  "meta": {
+    "instanceId": "75af844b993f15f935c9b4383bfc56f71df20a6a1f0b7d83cd483977774256d8"
+  },
+  "id": "VasMNhCVgpac36Rt",
+  "tags": []
+}

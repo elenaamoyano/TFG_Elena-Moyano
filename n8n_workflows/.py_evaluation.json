@@ -1,0 +1,797 @@
+{
+  "name": "PRUEBA_10.2-VALIDACIÓN-(code-py)",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "anthropic/claude-opus-4.6",
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        992,
+        576
+      ],
+      "id": "026c73fb-3dd1-472e-80fe-323d988b848a",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"status\": { \"type\": \"string\" },\n    \"file_name\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"changes\": { \n      \"type\": \"array\", \n      \"items\": { \"type\": \"string\" }     \n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1280,
+        576
+      ],
+      "id": "38688a5e-7576-45cd-b74a-d9afa9bc05ee",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search the web using Serper API.\nCall this tool with a 'query' parameter. Example: { \"query\": \"nginx magic_feature\" }",
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "num": 5
+      },
+      "type": "n8n-nodes-serper-search.serperTool",
+      "typeVersion": 1,
+      "position": [
+        2240,
+        1088
+      ],
+      "id": "e3f88b3b-6ec2-4f3d-889c-813b5fe7ac19",
+      "name": "Serper1",
+      "credentials": {
+        "serperApi": {
+          "id": "aaEAZ3t6D2d7u8GE",
+          "name": "Serper account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8001/query",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        1136,
+        624
+      ],
+      "id": "d5c0014f-bafa-43e5-83f9-76d4a092eb0a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert python code file analyzer.\n\nFILE TO ANALYZE:\n{{ $json.prompt_for_detector }}\n\nINSTRUCTIONS:\n\nScan the file for REAL errors only (syntax, semantic, or logic issues). Do NOT suggest improvements or optimizations.\n\nFor each error found, provide a SHORT, KEYWORD-BASED description (max 20 words per error).\n\nIMPORTANT: Your response MUST be a JSON object with these fields:\n\n- file_name: \"{{ $json.file_name }}\"\n- content: \"{{ $json.file_content }}\"\n- suggested_errors: your array of detected errors\n\nReturn ONLY the JSON object. No extra text.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        368,
+        848
+      ],
+      "id": "6a78ec1b-b97e-40ba-b716-9bbe0e526b16",
+      "name": "DETECTOR",
+      "retryOnFail": true,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-opus-4.6",
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        288,
+        1056
+      ],
+      "id": "1fd8f5a2-0d8c-4929-89bc-e7af47ac59f4",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"file_name\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"suggested_errors\": { \n      \"type\": \"array\", \n      \"items\": { \"type\": \"string\" }\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        1056
+      ],
+      "id": "3147e213-e850-4577-82e0-32970300f8cd",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-opus-4.6",
+        "options": {
+          "maxTokens": 2000,
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        1088
+      ],
+      "id": "b71ee019-fd21-4d6d-98c9-cbf3f9c8d93a",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"status\": { \"type\": \"string\" },\n    \"file_name\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"changes\": { \n      \"type\": \"array\", \n      \"items\": { \"type\": \"string\" }\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2384,
+        1088
+      ],
+      "id": "fa2216c7-5d04-437b-abf1-44e0dd2fa482",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert in Python code file errors. Your task is to analyze, search, and correct Python files.\n\nFILE TO CORRECT:\n{{ $json.output.content }}\n\nSUGGESTED ERRORS:\n{{ $json.output.suggested_errors }}\n\n===========================================\nTOOL USAGE - HTTP REQUEST TOOL\n===========================================\nYou have access to the 'http_request_tool' which searches Chroma.\nThe knowledge base has 6 separate collections: code, config, data, deps, docker and env.\nWhen you use this tool, you MUST provide:\n  'query': your search text (max 20 words)\n  'collection': 'code'\n\n===========================================\nINSTRUCTIONS\n===========================================\nSTEP 1 — Search Chroma\nFormulate a SINGLE, concise search query (max 20 words) based on the suggested errors.\nUse the 'http_request_tool' with collection: 'code'.\n\nSTEP 2 — Apply fixes\n- If Chroma returns useful results: use them to guide your corrections.\n- If Chroma returns no results or irrelevant results: DO NOT stop or retry. Use your own expert knowledge to correct the file. Always move forward.\n\nSTEP 3 — Return the corrected file\n- The corrected file MUST perform exactly the same functionality as the original buggy file, just without the errors.\n- Do NOT add new features, do NOT change the logic beyond what is necessary to fix the error.\n- Apply ALL necessary fixes and return the complete corrected file.\n\n===========================================\nCRITICAL RULES\n===========================================\n- ALWAYS return a response, even if Chroma has no useful results.\n- NEVER retry the Chroma search more than once.\n- NEVER leave the response empty or pending.\n- Chroma is optional context, NOT a required source. If it is not helpful, rely on your own knowledge.\n- Do NOT use Simple Memory.\n- Return ONLY valid JSON, no extra text.\n- In the JSON response, ALL newlines inside string values MUST be escaped as \\n and all tabs as \\t. NEVER use literal newlines inside JSON string values.\n\n===========================================\nRESPONSE FORMAT (JSON)\n===========================================\n{\n  \"status\": \"fixed\" or \"no_errors\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"complete corrected file content here\",\n  \"changes\": [\"list of changes made\"]\n}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1056,
+        384
+      ],
+      "id": "5757d09c-aba8-4dfe-9ac4-ed493ec09d1d",
+      "name": "CORRECTOR-CHROMA",
+      "retryOnFail": true,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=FILE TO ANALYZE:\n{{ $json.output.content }}\n\nCONTEXT:\nYou are an expert in python code file errors.\n\nThis file has been marked as \"POTENTIAL ERROR\" because:\n- Our local knowledge base (Chroma) had no solution\n- OR the previous correction was incomplete\n\nYou are in a special workflow branch where your FIRST action MUST be to search the internet for information about this code.\n\nCRITICAL - EXACT FORMAT FOR TOOL CALLING:\nWhen you need to search, you MUST generate this EXACT JSON once (with no text before or after):\n\n{\"tool\":\"serper\",\"arguments\":{\"query\":\"your search query here\"}}\n\nReplace the query with specific terms based on:\n- The error type (from suggested_errors or detection)\n- The code content\n\nDo NOT explain anything. Do NOT say \"I'll search\". ONLY generate that JSON.\n\nTOOL NAME: serper\nPARAMETER: query (string)\n\nEXAMPLES OF GOOD QUERIES:\n\"python syntax error missing colon if statement\"\n\"python logic error off by one range loop\"\n\"python indentation error unexpected indent function\"\n\"python name error variable not defined scope\"\n\"python type error unsupported operand string int\"\n\"python index error list out of range\"\n\"python logic error wrong comparison operator greater less\"\n\nINSTRUCTIONS\nAfter the tool returns results:\n\n1. Analyze the search results carefully\n2. Extract the most relevant solution for the current error\n3. Apply the solution to the file\n4. Return the corrected file\n\nHANDLING CODE WITH NO ERRORS\n1. If you determine that the code has NO ERRORS:\n   - Keep the code EXACTLY as it was\n   - Set \"status\": \"no_errors\"\n   - Leave \"content\" with the ORIGINAL code\n   - Set \"changes\" as an empty array []\n\n2. If you find ERRORS that need fixing:\n   - Fix ONLY the errors you identified\n   - Keep the original structure and indentation\n   - Set \"status\": \"fixed\"\n   - Provide the corrected code in \"content\"\n   - List the changes made in \"changes\" array\n\nCRITICAL RULES:\n- NEVER reorganize, reformat, or restructure unless fixing an error\n- If no errors are found, return the EXACT original code\n- Do NOT add comments, explanations, or modifications unless necessary\n\nRESPONSE FORMAT (JSON):\n{\n  \"status\": \"fixed\" or \"no_errors\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"complete file (corrected if errors found, ORIGINAL if no errors)\",\n  \"changes\": [\"list of changes made\"] or []\n}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2160,
+        864
+      ],
+      "id": "68abefa0-5bc1-4467-9434-22288ac4713d",
+      "name": "CORRECTOR-SERPER"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c71d521-56ba-4285-9b3d-f85ed1adc0aa",
+              "leftValue": "={{ $json.output.suggested_errors.length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        848
+      ],
+      "id": "b3126f0c-e6bf-4bed-bf1c-bd4579b496d5",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -464,
+        352
+      ],
+      "id": "3f67a7db-272d-467f-8b4c-58083cd46cb8",
+      "name": "Loop Over Items5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a89a950d-07e7-4865-9963-b17a579aaff0",
+              "leftValue": "={{ $json.output.status }}",
+              "rightValue": "verified",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2048,
+        384
+      ],
+      "id": "7313fefa-6651-4d19-9ea9-26a9ffdb2eaf",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const outputAgente = $input.first().json.output;\n\nconst resultado = {\n  status: outputAgente.status || 'unknown',\n  file_name: outputAgente.file_name || '',\n  content: outputAgente.content || '',\n  changes: outputAgente.changes\n};\n\nreturn [{\n  json: resultado\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2720,
+        368
+      ],
+      "id": "d062c8bf-80ff-420a-9f78-49545c1d2d70",
+      "name": "FORMATEADOR"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "corrected_files",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "83b82bd1-530a-47d3-8cff-6cd28e1d65bc",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a verification agent specialized in python code file errors. Your task is to examine a file that has already been processed by a correction agent and determine if it is now error-free.\n\nINPUT DATA STRUCTURE:\nYou will receive a JSON object with these exact fields:\n\n{\n  \"status\": \"{{ $json.output.status }}\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"{{ $json.output.content }}\",\n  \"changes\": \"{{ $json.output.changes }}\"\n}\n\n===========================================\nYOUR VERIFICATION TASK\n===========================================\n\n1. Analyze the file in the \"content\" field.\n\n2. Verify if the file is COMPLETELY error-free:\n   - Check syntax errors (missing semicolons, unbalanced braces)\n   - Check semantic errors (directives in wrong context, invalid parameters)\n   - Check logic errors (duplicate blocks, missing dependencies)\n   - DO NOT suggest improvements or optimizations, only detect actual errors\n\n===========================================\nOUTPUT FORMAT\n===========================================\n\nYou must return ONLY the JSON object, with NO explanations, NO analysis, NO additional text.\n\nCASE A: FILE IS ERROR-FREE\n\nIf you find NO errors, return EXACTLY this:\n\n{\n  \"status\": \"verified\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"{{ $json.output.content }}\",\n  \"changes\": {{ $json.output.changes }}\n}\n\nCASE B: FILE STILL HAS ERRORS\n\nIf you find errors, return EXACTLY this:\n\n{\n  \"status\": \"needs_revision\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"{{ $json.output.content }}\",\n  \"remaining_errors\": [\n    \"error description 1 with line number\",\n    \"error description 2 with line number\"\n  ]\n}\n\n===========================================\nCRITICAL RULES\n===========================================\n\n- If file is error-free → return Case A\n- If errors still exist → return Case B\n- Do NOT invent errors that don't exist\n- Do NOT suggest improvements or optimizations\n- Be precise: include line numbers when possible\n- Each error description should be concise (max 15 words)\n- The original \"content\" must NEVER be modified\n- Return ONLY the JSON, no extra text\n- ALL string values in the JSON response MUST be wrapped in double quotes, including the `changes` and `analysis` fields.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1456,
+        384
+      ],
+      "id": "93bafc5b-81fc-47ad-89da-c19e23a107f1",
+      "name": "COMPROBADOR"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-opus-4.6",
+        "options": {
+          "maxTokens": 2000,
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        624
+      ],
+      "id": "411b1bdb-6fa1-477e-b39e-831e147133c4",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst outputText = input.output || '';\n\nlet jsonResult = null;\n\nconst jsonMatch = outputText.match(/```json\\s*([\\s\\S]*?)\\s*```/);\nif (jsonMatch && jsonMatch[1]) {\n    try {\n        jsonResult = JSON.parse(jsonMatch[1].trim());\n    } catch (e) {\n        console.log('Error parseando JSON:', e);\n    }\n}\n\nif (!jsonResult) {\n    const objectMatch = outputText.match(/\\{[\\s\\S]*\\}/);\n    if (objectMatch) {\n        try {\n            jsonResult = JSON.parse(objectMatch[0]);\n        } catch (e) {\n            console.log('Error parseando objeto:', e);\n        }\n    }\n}\n\nif (!jsonResult) {\n    return [{\n        json: {\n            output: {\n                error: 'No se pudo extraer JSON válido',\n                raw_output: outputText\n            }\n        }\n    }];\n}\n\nconst resultadoLimpio = {\n    status: jsonResult.status || 'unknown',\n    file_name: jsonResult.file_name || '',\n    content: jsonResult.content || '',\n    changes: jsonResult.changes || [],\n    suggested_errors: jsonResult.suggested_errors || []\n};\n\nif (jsonResult.suggested_errors && jsonResult.suggested_errors.length > 0) {\n    resultadoLimpio.status = jsonResult.status || 'needs_revision';\n}\n\nreturn [{\n    json: {\n        output: resultadoLimpio\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        384
+      ],
+      "id": "21c79ea8-bb5e-4100-9343-17c71d7b5704",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -720,
+        304
+      ],
+      "id": "9d3e4e7c-663b-43ba-ac0b-dc785d4952de",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst body = input.body || input;\n\nconst folderPath = body.folder_path || '';\nconst configFiles = body.files || [];\n\nconst items = configFiles.map(filename => ({\n    json: {\n        config_file: filename,\n        folder_path: folderPath\n    }\n}));\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2064,
+        304
+      ],
+      "id": "ccc9e4e7-76ab-4514-9819-940db9e8938c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1776,
+        304
+      ],
+      "id": "335faaab-37d6-421e-8d0c-1b992355be69",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "command": "={{ $json.comando }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        400
+      ],
+      "id": "de986d4a-e747-4cfb-ade1-f7ec16e42c83",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst fileContent = input.stdout || '';\n\nreturn [{\n    json: {\n        config_content: fileContent,\n        config_file: $('Code in JavaScript17').first().json.config_file,\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        400
+      ],
+      "id": "0b6e86af-5319-4afe-9c53-36bc14831c10",
+      "name": "Code in JavaScript16"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/eval",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2304,
+        304
+      ],
+      "id": "e26979c3-c915-44e7-91e3-57980f64fcb5",
+      "name": "Webhook1",
+      "webhookId": "8580588c-7ad5-4b9e-be2e-e0bb9c38237b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nconst folderPath = input.folder_path || '';\nconst configFile = input.config_file || '';\n\nconst comando = `type \"${folderPath}\\\\${configFile}\"`;\n\nreturn [{\n    json: {\n        ...input,\n        comando: comando\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1568,
+        400
+      ],
+      "id": "32079cae-2845-4c4a-a9d9-6876464b3821",
+      "name": "Code in JavaScript17"
+    },
+    {
+      "parameters": {
+        "jsCode": "const container = $input.first().json;\n\nconst fileName = container.config_file || '';\nconst fileContent = container.config_content || '';\n\n\nconst promptIndividual = `\n=== FILE CONFIGURATION ANALYSIS ===\n\nFile: ${fileName}\n\nCONFIGURATION TO ANALYZE:\n\\`\\`\\`\n${fileContent}\n\\`\\`\\`\n`;\n\nreturn [{\n  json: {\n    file_name: fileName,\n    file_content: fileContent,\n    prompt_for_detector: promptIndividual\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        688
+      ],
+      "id": "8793c575-981c-4246-a214-3533111415db",
+      "name": "Code in JavaScript11"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serper1": {
+      "ai_tool": [
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DETECTOR": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CORRECTOR-CHROMA": {
+      "main": [
+        [
+          {
+            "node": "COMPROBADOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CORRECTOR-SERPER": {
+      "main": [
+        [
+          {
+            "node": "FORMATEADOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items5": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "FORMATEADOR",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FORMATEADOR": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "COMPROBADOR": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "COMPROBADOR",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript17",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript16": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript17": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript11": {
+      "main": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "70b4323c-e55d-40ab-acbf-f815ba7302cc",
+  "meta": {
+    "instanceId": "75af844b993f15f935c9b4383bfc56f71df20a6a1f0b7d83cd483977774256d8"
+  },
+  "id": "Vh5BOKRT6YW1WHTJ",
+  "tags": []
+}
