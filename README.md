@@ -18,3 +18,11 @@ All agents are connected to an LLM, which can be selected depending on the natur
 - **Streamlit** - User interface
 - **Chroma + FastAPI** - Vector database
 - **Serper** - External search
+
+## Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/elenaamoyano/TFG_Elena-Moyano.git
+cd TFG_Elena-Moyano
