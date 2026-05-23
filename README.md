@@ -74,12 +74,12 @@ python main.py
 
 Import all solutions for each collection 
 
+Frist Review load_all_collections.py paths
+
 ```bash
 cd ..
 python load_all_collections.py
 ```
-
-*Review oad_all_collections.py paths*
 
 ### 8. Start Streamlit UI
 
