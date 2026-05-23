@@ -26,3 +26,13 @@ All agents are connected to an LLM, which can be selected depending on the natur
 ```bash
 git clone https://github.com/elenaamoyano/TFG_Elena-Moyano.git
 cd TFG_Elena-Moyano
+
+
+### 2. Install Node.js
+
+Download and install Node.js 22.x LTS from [nodejs.org](https://nodejs.org)
+
+Verify installation:
+```bash
+node --version
+npm --version
