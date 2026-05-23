@@ -1,5 +1,5 @@
 {
-  "name": "PRUEBA_10.2-VALIDACIÓN-(docker)",
+  "name": "docker_evaluation",
   "nodes": [
     {
       "parameters": {
