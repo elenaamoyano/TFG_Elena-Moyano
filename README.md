@@ -26,7 +26,7 @@ All agents are connected to an LLM, which can be selected depending on the natur
 ```bash
 git clone https://github.com/elenaamoyano/TFG_Elena-Moyano.git
 cd TFG_Elena-Moyano
-
+```
 
 ### 2. Install Node.js
 
@@ -36,3 +36,19 @@ Verify installation:
 ```bash
 node --version
 npm --version
+```
+
+### 3. Install n8n globally
+
+```bash
+npm install n8n -g
+```
+
+### 4. Start n8n
+
+```bash
+n8n start
+```
+
+Access the web interface at: http://localhost:5678
+
