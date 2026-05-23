@@ -1,2 +1,20 @@
 # TFG_Elena-Moyano
 Multi-agent automated system for error correction in microservices files using n8n orchestration, Chroma RAG, and LLMs
+
+## Description
+
+This system uses a 5-agent workflow in n8n to automatically detect and correct errors in:
+
+- **Python files** (.py)
+- **configuration files** (.conf)
+- **Docker files** (Dockerfile)
+- **Environment files** (.env)
+
+All agents are connected to an LLM, which can be selected depending on the nature of the problem to solve. The agents use Chroma as an internal RAG tool to support the corrections and Serper as an external RAG tool for web search when needed. 
+
+## Technologies
+
+- **n8n** - Workflow orchestration
+- **Streamlit** - User interface
+- **Chroma + FastAPI** - Vector database
+- **Serper** - External search
