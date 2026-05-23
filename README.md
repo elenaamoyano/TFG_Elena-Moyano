@@ -52,3 +52,39 @@ n8n start
 
 Access the web interface at: http://localhost:5678
 
+### 5. Import workflows
+
+- Click 'Create worflow'
+- Click '...' -> Import from File
+- Select the workflow JSON files from /n8n_workflows/
+
+### 6. Configure credentials
+
+In n8n Personal panel, go to Credentials → Create Credential and add:
+- OpenRouter API Key (for LLMs)
+- Serper API Key
+
+### 7. Start Chroma API
+
+```bash
+cd chroma-api
+pip install -r requirements.txt
+python main.py
+```
+
+### 8. Start Streamlit UI
+
+```bash
+cd streamlit-ui
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+### System requirements
+
+| Requirement | Version |
+|-------------|---------|
+| Node.js | 20.x or 22.x LTS |
+| Python | 3.12+ |
+| npm | Included with Node.js |
+| Ports | 5678 (n8n), 8001 (Chroma), 8501 (Streamlit) |
