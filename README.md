@@ -72,6 +72,15 @@ pip install -r requirements.txt
 python main.py
 ```
 
+Import all solutions for each collection 
+
+```bash
+cd ..
+python load_all_collections.py
+```
+
+*Review oad_all_collections.py paths*
+
 ### 8. Start Streamlit UI
 
 ```bash
