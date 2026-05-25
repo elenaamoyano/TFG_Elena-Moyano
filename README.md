@@ -86,6 +86,7 @@ To ensure all required nodes (including **Execute Command**) are available, star
 ```bash
 NODES_EXCLUDE="[]" \
 N8N_BLOCK_ENV_VARS_IN_EXECUTE_COMMAND=false \
+N8N_COMMUNITY_PACKAGES_ENABLED=true \
 n8n start
 ```
 
@@ -98,7 +99,10 @@ Access the web interface at: http://localhost:5678 and create an account.
 - Select the workflow JSON files from /n8n_workflows/
 
 complete_system.json contains the full multi-agent system. The rest of the workflows were used only for evaluation during benchmark testing.
+
 Once you have the workflow open, make sure the "Execute Command" nodes are correctly connected on both sides to their adjacent nodes.
+
+Click on the **Serper Search** node in the fourth agent and install it. This will make the node appear in your n8n instance.
 
 ### 6. Configure credentials
 
