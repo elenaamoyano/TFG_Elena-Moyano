@@ -94,6 +94,8 @@ Access the web interface at: http://localhost:5678 and create an account
 - Click '...' -> Import from File
 - Select the workflow JSON files from /n8n_workflows/
 
+complete_system.json contains the full multi-agent system. The rest of the workflows were used only for evaluation during benchmark testing.
+
 ### 6. Configure credentials
 
 In n8n Personal panel, go to Credentials → Create Credential and add:
