@@ -126,6 +126,33 @@ cd streamlit-ui
 pip install -r requirements.txt
 streamlit run app.py
 ```
+Access the web interface at: http://localhost:8501/
+
+## 🛠️ Possible Issue: `streamlit: command not found`
+
+If after installing the dependencies with:
+
+```bash
+pip install -r requirements.txt
+```
+
+the `streamlit` command is not recognized, it is likely that it was installed in the user site directory (`--user install`), which is not always included in the `PATH`.
+
+---
+
+## Check installation
+
+Try running it directly:
+
+```bash
+~/.local/bin/streamlit --version
+```
+
+If it works, you can run the app using:
+
+```bash
+~/.local/bin/streamlit run app.py
+```
 
 ### System requirements
 
