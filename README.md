@@ -109,6 +109,7 @@ cd chroma-api
 pip install -r requirements.txt
 python main.py
 ```
+Access the web interface at: http://127.0.0.1:8001/docs#
 
 Import all solutions for each collection 
 
