@@ -32,6 +32,33 @@ cd TFG_Elena-Moyano
 
 Download and install Node.js 22.x LTS from [nodejs.org](https://nodejs.org)
 
+**Windows:**
+1. Run the downloaded `.msi` installer
+2. Follow the installation wizard (default settings are fine)
+
+**Linux:**
+1. Extract the downloaded archive:
+```bash
+tar -xzf node-v22.22.3-linux-x64.tar.gz -C ~/
+```
+2. Edit ~/.bashrc to add Node.js to PATH:
+```bash
+nano ~/.bashrc
+```
+3. Add this line at the end of the file:
+```bash
+export PATH="$HOME/node-v22.22.3-linux-x64/bin:$PATH"
+```
+4. Save and exit.
+5. Apply the changes:
+```bash
+source ~/.bashrc
+```
+
+**macOS:**
+1. Download the .pkg installer from [nodejs.org](https://nodejs.org)
+2. Run the installer and follow the wizard
+
 Verify installation:
 ```bash
 node --version
