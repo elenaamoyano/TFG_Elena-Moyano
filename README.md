@@ -86,7 +86,7 @@ npm install n8n -g
 n8n start
 ```
 
-Access the web interface at: http://localhost:5678
+Access the web interface at: http://localhost:5678 and create an account
 
 ### 5. Import workflows
 
