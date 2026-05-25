@@ -81,8 +81,11 @@ npm install n8n -g
 ```
 
 ### 4. Start n8n
+To ensure all required nodes (including **Execute Command**) are available, start :contentReference[oaicite:0]{index=0} with the following command:
 
 ```bash
+NODES_EXCLUDE="[]" \
+N8N_BLOCK_ENV_VARS_IN_EXECUTE_COMMAND=false \
 n8n start
 ```
 
