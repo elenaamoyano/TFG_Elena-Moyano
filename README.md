@@ -96,8 +96,10 @@ Access the web interface at: http://localhost:5678 and create an account.
 
 - Click 'Create worflow'
 - Click '...' -> Import from File
-- Select the workflow JSON files from /n8n_workflows_windows/ or /n8n_workflows_linux/
-
+- Select the workflow JSON files from the folder corresponding to your operating system:
+  - **Windows:** `/n8n_workflows_windows/`
+  - **Linux/macOS:** `/n8n_workflows_linux/`
+    
 complete_system.json contains the full multi-agent system. The rest of the workflows were used only for evaluation during benchmark testing.
 
 Once you have the workflow open, make sure the "Execute Command" nodes are correctly connected on both sides to their adjacent nodes.
