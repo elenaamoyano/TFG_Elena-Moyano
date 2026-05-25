@@ -128,7 +128,7 @@ streamlit run app.py
 ```
 Access the web interface at: http://localhost:8501/
 
-## 🛠️ Possible Issue: `streamlit: command not found`
+### 🛠️ Possible Issue: `streamlit: command not found`
 
 If after installing the dependencies with:
 
@@ -140,7 +140,7 @@ the `streamlit` command is not recognized, it is likely that it was installed in
 
 ---
 
-## Check installation
+### Check installation
 
 Try running it directly:
 
