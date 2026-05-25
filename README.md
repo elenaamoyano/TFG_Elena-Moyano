@@ -111,14 +111,13 @@ python main.py
 ```
 Access the web interface at: http://127.0.0.1:8001/docs#
 
-Import all solutions for each collection 
-
-Frist Review load_all_collections.py paths
-
+Import all solutions for each collection
 ```bash
 cd ..
 python load_all_collections.py
 ```
+
+You can review this in the GET/collections section of the interface. Click 'Try it out' and 'Execute'.
 
 ### 8. Start Streamlit UI
 
