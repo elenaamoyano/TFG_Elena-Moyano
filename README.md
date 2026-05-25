@@ -30,7 +30,7 @@ cd TFG_Elena-Moyano
 
 ### 2. Install Node.js
 
-Download and install Node.js 22.x LTS from [nodejs.org](https://nodejs.org)
+Download Node.js 22.x LTS from [nodejs.org](https://nodejs.org)
 
 **Windows:**
 1. Run the downloaded `.msi` installer
