@@ -33,8 +33,12 @@ cd TFG_Elena-Moyano
 Download Node.js 22.x LTS from [nodejs.org](https://nodejs.org)
 
 **Windows:**
-1. Run the downloaded `.msi` installer
-2. Follow the installation wizard (default settings are fine)
+1. Double-click the downloaded `.msi` file (Windows Installer)
+2. Click "Next" through the installation wizard
+3. Accept the license agreement
+4. Leave default installation path (`C:\Program Files\nodejs`)
+5. Click "Install" and then "Finish"
+6. **Restart your terminal** 
 
 **Linux:**
 1. Extract the downloaded archive:
@@ -56,8 +60,13 @@ source ~/.bashrc
 ```
 
 **macOS:**
-1. Download the .pkg installer from [nodejs.org](https://nodejs.org)
-2. Run the installer and follow the wizard
+1. Double-click the downloaded `.pkg` file (Apple package)
+2. Click "Continue" through the installation wizard
+3. Accept the license agreement
+4. Leave default installation path
+5. Click "Install" (may require your system password)
+6. Click "Close" when finished
+7. **Restart your terminal** 
 
 Verify installation:
 ```bash
