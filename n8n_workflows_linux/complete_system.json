@@ -1,0 +1,1532 @@
+{
+  "name": "complete_system",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2256,
+        704
+      ],
+      "id": "0b5231a7-42b2-4bc9-aa69-0be34bdf9204",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst archivosCorregidos = input.corrected_files || [];\nconst itemsValidos = archivosCorregidos.filter(item => \n  (item.status === 'fixed' || item.status === 'verified') && \n  item.content && \n  item.content.trim() !== ''\n);\n\nconst webhookData = $('Webhook').first().json.body;\nconst PROJECT_PATH = webhookData.project_path || '';\nconst OUTPUT_PATH = webhookData.output_path || \"sobrescribir\";\n\nconst resultados = [];\nitemsValidos.forEach(item => {\n  const fileName = item.file_name;\n  const serviceName = $('Webhook').first().json.body.service;\n  const composeFile = item.compose_file;\n  const changes = item.changes || [];\n  const carpeta = item.file_path || '';\n  \n  let rutaEscritura = '';\n  if (OUTPUT_PATH !== \"sobrescribir\") {\n    rutaEscritura = `${OUTPUT_PATH}\\\\${fileName}`;\n  } else {\n    rutaEscritura = `${carpeta}\\\\${fileName}`;\n  }\n\n  let rutaDestino = '';\n  if (OUTPUT_PATH !== \"sobrescribir\") {\n    rutaDestino = `${OUTPUT_PATH}`;\n  } else {\n    rutaDestino = `${carpeta}`;\n  }\n  \n  const contentBase64 = Buffer.from(item.content, 'utf8').toString('base64');\n  \n  resultados.push({\n    binary: {\n      data: {\n        data: contentBase64,\n        fileName: fileName,\n        mimeType: 'text/plain'\n      }\n    },\n    json: {\n      file_name: fileName,\n      service_name: serviceName,\n      project_path: PROJECT_PATH,\n      ruta_escritura: rutaEscritura,\n      ruta_completa: rutaDestino,\n      carpeta_original: carpeta,\n      compose_file: composeFile,\n      cambios_realizados: changes,\n      timestamp: new Date().toISOString(),\n      output_path: OUTPUT_PATH\n    }\n  });\n});\nreturn resultados;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        160
+      ],
+      "id": "19710803-3a1a-426c-a3a6-b08b09edbf07",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\nconst fileNames = body.file_name.split(',').map(f => f.trim());\n\nconst items = fileNames.map(fileName => ({\n  json: {\n    project_path: body.project_path || '',\n    compose_file: body.compose_files?.[0] || body.compose_files || '',\n    file_path: body.file_path || '',\n    file_name: fileName,\n    service: body.service || ''\n  }\n}));\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3584,
+        704
+      ],
+      "id": "afa3704f-1e4f-45bc-8aa8-b77803ededa0",
+      "name": "Code in JavaScript8"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -3296,
+        704
+      ],
+      "id": "ea16fe6a-85d8-4701-9faf-02c21cf8ce8e",
+      "name": "Loop Over Items3"
+    },
+    {
+      "parameters": {
+        "executeOnce": "={{ true }}",
+        "command": "={{ $json.comando }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -2800,
+        800
+      ],
+      "id": "c7fdc60b-3dbf-4603-bed0-053d51c1160d",
+      "name": "Execute Command5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json;\n\nlet fileContent = output.stdout || '';\nif (fileContent.includes('#ERROR')) fileContent = '';\n\nconst itemBucle = $('Loop Over Items3').first().json;\nconst serviceName = itemBucle.service;\nconst composeFile = itemBucle.compose_file;\nconst projectPath = itemBucle.project_path;\nconst filePath = itemBucle.file_path;\nconst fileName = itemBucle.file_name;\n\ntry {\n    const composePath = `${projectPath}\\\\${composeFile}`;\n    \n    const { execSync } = require('child_process');\n    const cmd = `type \"${composePath}\" | findstr /C:\"${serviceName}:\" -A 10 | findstr /C:\"container_name:\"`;\n    const result = execSync(cmd, { encoding: 'utf8', stdio: 'pipe' }).trim();\n    \n    if (result) {\n        const match = result.match(/container_name:\\s*[\"']?([^\"'\\n]+)/);\n        if (match && match[1]) {\n            containerName = match[1].trim();\n        }\n    }\n} catch (e) {\n    console.log(`No se pudo obtener container_name: ${e.message}`);\n}\n\nreturn [{\n    json: {\n        service_name: serviceName,\n        file_name: fileName,\n        file_path: filePath,\n        compose_file: composeFile,\n        file_content: fileContent.trim(),\n        mode: 'contenedor'\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2544,
+        800
+      ],
+      "id": "a8153293-08d7-4119-96d7-701c3235b4b2",
+      "name": "Code in JavaScript9"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nconst archivoLimpio = (input.file_name || '').replace(/[\"']/g, '').trim();\n\nconst rutaBase = input.file_path;\n\nconst comando = `cat \"${rutaBase}/${archivoLimpio}\" 2>/dev/null || echo \"#ERROR\"`;\n\nreturn [{\n    json: {\n        ...input,\n        comando: comando\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3088,
+        800
+      ],
+      "id": "06e4f78f-0021-4878-b989-7672c99e55e4",
+      "name": "Code in JavaScript10"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "={{ $json.ruta_escritura }}",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        176
+      ],
+      "id": "a84948d7-002a-45a5-8041-187adfb619c9",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "executeOnce": "={{ true }}",
+        "command": "={{ $json.comando }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "659efac2-e7ff-4cfc-9188-70df43ed8d42",
+      "name": "Execute Command6"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -288,
+        160
+      ],
+      "id": "805ba8c5-44bc-490a-950e-63de82e91c02",
+      "name": "Loop Over Items4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nconst rutaCompleta = input.ruta_completa;\nconst service = input.service || input.service_name || '';\nconst composeFile = input.compose_file || '';\n\nif (!rutaCompleta || !service) {\n    return [{ json: { ...input, comando: \"\" } }];\n}\n\nconst comando = `cd \"${rutaCompleta}\" && docker-compose -f ${composeFile} up -d ${service}`;\n\n\nreturn [{ json: { ...input, comando } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "19c64f24-37a2-4f11-a53f-b3990585ffad",
+      "name": "Code in JavaScript12"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-haiku-4.5",
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        928
+      ],
+      "id": "97e252e0-8c07-4728-955b-37dc81280bee",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"status\": { \"type\": \"string\" },\n    \"file_type\": { \"type\": \"string\" },\n    \"file_name\": { \"type\": \"string\" },\n    \"service_name\": { \"type\": \"string\" },\n    \"file_path\": { \"type\": \"string\" },\n    \"compose_file\": { \"type\": \"string\" },\n    \"mode\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"changes\": { \n      \"type\": \"array\", \n      \"items\": { \"type\": \"string\" }\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        928
+      ],
+      "id": "428f57cf-3abe-4d18-8fa8-a2758b14948e",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search the web using Serper API.\nCall this tool with a 'query' parameter. Example: { \"query\": \"nginx magic_feature\" }",
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "num": 5
+      },
+      "type": "n8n-nodes-serper-search.serperTool",
+      "typeVersion": 1,
+      "position": [
+        928,
+        1440
+      ],
+      "id": "ccd4f3bb-5263-4212-9756-79478782c10f",
+      "name": "Serper1",
+      "credentials": {
+        "serperApi": {
+          "id": "aaEAZ3t6D2d7u8GE",
+          "name": "Serper account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/config",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3824,
+        704
+      ],
+      "id": "3fb1b5e8-6028-400b-b246-df65c7eda563",
+      "name": "Webhook",
+      "webhookId": "8580588c-7ad5-4b9e-be2e-e0bb9c38237b"
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        672,
+        224
+      ],
+      "id": "d1b64e9b-3881-41a4-a7bd-174e29f1e703",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8001/query",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        -176,
+        976
+      ],
+      "id": "4ad060d8-670c-4a7f-a9b2-d8144bd0e632",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert {{ $json.file_type }} file analyzer.\n\nFILE TYPE: {{ $json.file_type }}\nMODE: {{ $json.mode }}\n\nFILE TO ANALYZE:\n{{ $json.prompt_for_detector }}\n\nBEHAVIOR BY MODE:\n\nIF MODE = \"app\":\n   - You MUST activate the SIMPLE MEMORY tool\n   - This tool allows you to remember errors found across multiple files\n   - Use it to track dependencies between files (e.g., server.js imports from package.json)\n   - Remember missing imports, undefined variables that reference other files\n   - Store in memory: file_name, error_type, and any cross-file dependencies\n\nIF MODE = \"contenedor\":\n   - Do NOT activate the simple memory tool\n   - Each file is processed independently\n   - Focus on syntax and configuration errors within the single file\n\nINSTRUCTIONS:\n\nScan the file for REAL errors only (syntax, semantic, or logic issues). Do NOT suggest improvements or optimizations.\n\nFor each error found, provide a SHORT, KEYWORD-BASED description (max 20 words per error).\n\nCOMMON KEYWORDS BY FILE TYPE:\n\n- **nginx_conf**: missing semicolon, unbalanced braces, wrong context, duplicate location\n- **docker_compose**: invalid indent, missing colon, duplicate service, port mapping error\n- **dockerfile**: invalid instruction, missing FROM, COPY error, missing CMD\n- **python_script**: indentation error, missing import, syntax error, NameError\n- **javascript_script**: missing bracket, undefined variable, syntax error\n- **env_file**: invalid variable format, missing value, duplicate variable\n- **json_file**: invalid JSON syntax, missing comma, duplicate key\n- **yaml_file**: invalid indent, missing colon, duplicate key\n- **deps_file**: missing dependency, invalid version, version conflict\n\nIMPORTANT: Your response MUST be a JSON object with these fields:\n- file_type: \"{{ $json.file_type }}\"\n- file_name: \"{{ $json.file_name }}\"\n- service_name: \"{{ $json.service_name }}\"\n- file_path: \"{{ $json.file_path }}\"\n- compose_file: \"{{ $json.compose_file }}\"\n- mode: \"{{ $json.mode }}\"\n- content: the original configuration text ({{ $json.file_content }})\n- suggested_errors: your array of detected errors\n\nReturn ONLY the JSON object. No extra text.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -944,
+        1200
+      ],
+      "id": "537ca8cd-180d-43b1-8243-fda656667284",
+      "name": "DETECTOR"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-haiku-4.5",
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        1408
+      ],
+      "id": "4d5174e4-3e96-4df5-ae4e-841752c24ef7",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"file_type\": { \"type\": \"string\" },\n    \"file_name\": { \"type\": \"string\" },\n    \"service_name\": { \"type\": \"string\" },\n    \"file_path\": { \"type\": \"string\" },\n    \"compose_file\": { \"type\": \"string\" },\n    \"mode\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"suggested_errors\": { \n      \"type\": \"array\", \n      \"items\": { \"type\": \"string\" }\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -768,
+        1408
+      ],
+      "id": "b5c4163c-c987-4036-9f55-5b5ecdd686ae",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash",
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        800,
+        1440
+      ],
+      "id": "48734a06-95d6-4426-bc06-a9001720b49d",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"status\": { \"type\": \"string\" },\n    \"file_type\": { \"type\": \"string\" },\n    \"file_name\": { \"type\": \"string\" },\n    \"service_name\": { \"type\": \"string\" },\n    \"file_path\": { \"type\": \"string\" },\n    \"compose_file\": { \"type\": \"string\" },\n    \"mode\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"changes\": { \n      \"type\": \"array\", \n      \"items\": { \"type\": \"string\" }\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1072,
+        1440
+      ],
+      "id": "1e2e035a-5420-4448-9b4e-9a54e4bdb641",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert in {{ $json.output.file_type }} configuration errors. Your task is to correct files with erros. You have access to Chroma to help your corrections.\n\nCHROMA COLLECTION RULES\nONLY search Chroma when file_type is one of: code, config, docker, env.\nFor ANY OTHER file_type (data, deps), DO NOT search Chroma. Skip directly to correction.\n\nINPUT DATA:\nSUGGESTED ERRORS:\n{{ $json.output.suggested_errors }}\n\nCONFIGURATION TO CORRECT:\n```{{ $json.output.file_type }}\n{{ $json.output.content }}\n\n\nTOOL USAGE - HTTP REQUEST TOOL:\nIF file_type IN [\"code\", \"config\", \"docker\", \"env\"]:\nYou MUST search Chroma BEFORE correcting. \n\nUse the http_request_tool with:\n'query': your search text (max 20 words, focus on the main error)\n'collection': {{ $json.output.file_type }}\n\nIF file_type NOT IN [\"code\", \"config\", \"docker\", \"env\"]:\nSKIP Chroma search. Proceed directly to correction using your own knowledge.\n\nEXAMPLES:\nfile_type\tExample query\ncode    \t\"missing semicolon in JavaScript function\"\nconfig\t    \"unbalanced braces in nginx.conf\"\nenv\t        \"DATABASE_URL variable format incorrect\"\ndocker\t    \"Dockerfile COPY failed no source files\"\ndata/deps\t NO SEARCH\n\n\nRESPONSE FORMAT (JSON)\n\n{\n\"status\": \"fixed\" or \"no_errors\",\n\"file_type\": \"{{ $json.output.file_type }}\",\n\"file_name\": \"{{ $json.output.file_name }}\",\n\"service_name\": \"{{ $json.output.service_name }}\",\n\"file_path\": \"{{ $json.output.file_path }}\",\n\"compose_file\": \"{{ $json.output.compose_file }}\",\n\"mode\": \"{{ $json.output.mode }}\",\n\"content\": \"complete corrected configuration\",\n\"changes\": [\"list of changes made based on Chroma examples\"]\n}\n\nCRITICAL RULES:\nSearch Chroma ONLY for code/config/docker/env. For other types, search is FORBIDDEN.\nIf Chroma returns no useful results, base the corrections on your knowledge.\nReturn ONLY the JSON, no extra text.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -256,
+        736
+      ],
+      "id": "d40dabc7-5348-413d-8faa-7f1def26ba62",
+      "name": "CORRECTOR-CHROMA",
+      "retryOnFail": true,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=CONFIGURATION TO ANALYZE:\n{{ $json.output.content }}\n\nCONTEXT:\nYou are an expert in {{ $json.output.file_type }} configuration errors.\n\nFILE_TYPE: {{ $json.output.file_type }}\nMODE: {{ $json.output.mode }}\nFILE_NAME: {{ $json.output.file_name }}\n\n\nThis configuration has been marked as \"POTENTIAL ERROR\" because:\n- Our local knowledge base (Chroma) had no solution\n- OR the previous correction was incomplete\n\nYou are in a special workflow branch where your FIRST action MUST be to search the internet for information about this configuration.\n\nCRITICAL - EXACT FORMAT FOR TOOL CALLING:\nWhen you need to search, you MUST generate this EXACT JSON once (with no text before or after):\n\n{\"tool\":\"serper\",\"arguments\":{\"query\":\"your search query here\"}}\n\nReplace the query with specific terms based on:\n- The error type (from suggested_errors or detection)\n- The FILE_TYPE (code, config, deps, env, data, docker)\n- The configuration content\n\nDo NOT explain anything. Do NOT say \"I'll search\". ONLY generate that JSON.\n\nTOOL NAME: serper\nPARAMETER: query (string)\n\nEXAMPLES OF GOOD QUERIES BY FILE_TYPE:\n| FILE_TYPE | Example query |\n|-----------|----------------|\n| code | \"JavaScript missing semicolon syntax error fix\" |\n| config | \"nginx.conf proxy_pass syntax error solution\" |\n| deps | \"package.json dependency version conflict resolve\" |\n| env | \".env file variable format DATABASE_URL\" |\n| data | \"SQL syntax error near SELECT statement\" |\n| docker | \"Dockerfile COPY command failed no source files\" |\n\nBEHAVIOR BY MODE:\nMODE = \"app\":\n   - Focus on application-level errors (code, dependencies, environment)\n   - Search for solutions that consider multiple files\n   - Look for dependency-related fixes\n\nMODE = \"contenedor\":\n   - Focus on container-level errors (Dockerfile, docker-compose, nginx)\n   - Search for infrastructure and configuration solutions\n   - Each file is independent\n\nINSTRUCTIONS\nAfter the tool returns results:\n\n1. Analyze the search results carefully\n2. Extract the most relevant solution for the current error\n3. Apply the solution to the configuration\n4. Return the corrected configuration\n\nHANDLING CONFIGURATIONS WITH NO ERRORS\n1. If you determine that the configuration has NO ERRORS:\n   - Keep the configuration EXACTLY as it was\n   - Set \"status\": \"no_errors\"\n   - Leave \"content\" with the ORIGINAL configuration\n   - Set \"changes\" as an empty array []\n\n2. If you find ERRORS that need fixing:\n   - Fix ONLY the errors you identified\n   - Keep the original structure and indentation\n   - Set \"status\": \"fixed\"\n   - Provide the corrected configuration in \"content\"\n   - List the changes made in \"changes\" array\n\nCRITICAL RULES:\n- NEVER reorganize, reformat, or restructure unless fixing an error\n- If no errors are found, return the EXACT original configuration\n- Do NOT add comments, explanations, or modifications unless necessary\n- Do NOT use Simple Memory (not needed for internet search)\n\nRESPONSE FORMAT (JSON):\n{\n  \"status\": \"fixed\" or \"no_errors\",\n  \"file_type\": \"{{ $json.output.file_type }}\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"service_name\": \"{{ $json.output.service_name }}\",\n  \"file_path\": \"{{ $json.output.file_path }}\",\n  \"compose_file\": \"{{ $json.output.compose_file }}\",\n  \"mode\": \"{{ $json.output.mode }}\",\n  \"content\": \"complete configuration (corrected if errors found, ORIGINAL if no errors)\",\n  \"changes\": [\"list of changes made\"] or []\n}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        848,
+        1216
+      ],
+      "id": "d0ed73bd-89f0-45c8-8e30-ce1fad9ce74c",
+      "name": "CORRECTOR-SERPER"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c71d521-56ba-4285-9b3d-f85ed1adc0aa",
+              "leftValue": "={{ $json.output.suggested_errors.length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -576,
+        1200
+      ],
+      "id": "d6db15f0-12e6-4dff-8b1f-21625a3277dc",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const container = $input.first().json;\n\nconst fileName = container.file_name || '';\nconst serviceName = container.service_name || '';\nconst filePath = container.file_path || '';\nconst fileContent = container.file_content || '';\nconst composeFile = container.compose_file || 'docker-compose.yml';\nconst mode = container.mode;\nconst fileType = container.file_type;\n\nconst promptIndividual = `\n=== FILE CONFIGURATION ANALYSIS ===\n\nFile: ${fileName}\nService: ${serviceName}\nFile Path: ${filePath}\nCompose File: ${composeFile}\nMode: ${mode}\n\nCONFIGURATION TO ANALYZE:\n\\`\\`\\`\n${fileContent}\n\\`\\`\\`\n`;\n\nreturn [{\n  json: {\n    file_name: fileName,\n    service_name: serviceName,\n    file_path: filePath,\n    compose_file: composeFile,\n    file_content: fileContent,\n    mode: mode,\n    file_type: fileType,\n    prompt_for_detector: promptIndividual\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        1040
+      ],
+      "id": "9dc6375f-227e-4fbf-9d05-d91ae4222c72",
+      "name": "Code in JavaScript11"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1776,
+        704
+      ],
+      "id": "4bce6779-20d3-4783-bb3b-685cf4f84287",
+      "name": "Loop Over Items5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a89a950d-07e7-4865-9963-b17a579aaff0",
+              "leftValue": "={{ $json.output.status }}",
+              "rightValue": "verified",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "8bf95eb3-5a5c-4c67-9b8a-768dfbc6a7a7",
+              "leftValue": "={{ $json.output.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        736
+      ],
+      "id": "8ffb5f9f-f1f8-4618-9e67-31ef140afa32",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const outputAgente = $input.first().json.output;\n\nconst resultado = {\n  status: outputAgente.status || 'unknown',\n  file_name: outputAgente.file_name || '',\n  service_name: outputAgente.service_name || '',\n  file_path: outputAgente.file_path || '',\n  compose_file: outputAgente.compose_file || '',\n  mode: outputAgente.mode || 'app',\n  content: outputAgente.content || '',\n  changes: outputAgente.changes\n};\n\nreturn [{\n  json: resultado\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        720
+      ],
+      "id": "98d9dce6-6e53-462b-a290-f9f4bc8c5d8e",
+      "name": "FORMATEADOR"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "corrected_files",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1312,
+        352
+      ],
+      "id": "57c9a0f0-6ecc-4c20-9777-500e2de14466",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a verification agent specialized in {{ $json.output.file_type }} configurations. Your task is to examine a configuration that has already been processed by a correction agent and determine if it is now error-free.\n\nINPUT DATA STRUCTURE:\n{\n  \"status\": \"{{ $json.output.status }}\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"service_name\": \"{{ $json.output.service_name }}\",\n  \"file_path\": \"{{ $json.output.file_path }}\",\n  \"compose_file\": \"{{ $json.output.compose_file }}\",\n  \"mode\": \"{{ $json.output.mode }}\",\n  \"file_type\": \"{{ $json.output.file_type }}\",\n  \"content\": \"{{ $json.output.content }}\",\n  \"changes\": {{ $json.output.changes }}\n}\n\n===========================================\nBEHAVIOR BY MODE\n===========================================\n\nIF {{ $json.output.mode }} = app:\n   - You MUST use the SIMPLE MEMORY tool\n   - Remember which errors were detected in previous files\n   - Check if corrections in one file resolve errors in another\n   - Verify cross-file dependencies are now correct\n   - Store verification results for each file\n\nIF {{ $json.output.mode }} = contenedor:\n   - Do NOT use SIMPLE MEMORY\n   - Verify each file independently\n   - Focus only on the current file\n\n===========================================\nYOUR VERIFICATION TASK\n===========================================\n\n1. Analyze the configuration in the \"content\" field.\n\n2. Verify if the configuration is COMPLETELY error-free:\n   - Check syntax errors (missing semicolons, unbalanced braces)\n   - Check semantic errors (directives in wrong context, invalid parameters)\n   - Check logic errors (duplicate blocks, missing dependencies)\n   - DO NOT suggest improvements or optimizations, only detect actual errors\n\n3. If MODE = \"app\", also check SIMPLE MEMORY for:\n   - Previous errors that should have been fixed\n   - Dependencies between this file and others\n   - Whether changes in this file affect previous files\n\n===========================================\nOUTPUT FORMAT\n===========================================\n\nYou must return ONLY the JSON object, with NO explanations, NO analysis, NO additional text.\n\nCASE A: CONFIGURATION IS ERROR-FREE\n\nIf you find NO errors, return EXACTLY this:\n\n{\n  \"status\": \"verified\",\n  \"file_type\": \"{{ $json.output.file_type }}\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"service_name\": \"{{ $json.output.service_name }}\",\n  \"file_path\": \"{{ $json.output.file_path }}\",\n  \"compose_file\": \"{{ $json.output.compose_file }}\",\n  \"mode\": \"{{ $json.output.mode }}\",\n  \"content\": \"{{ $json.output.content }}\",\n  \"changes\": \"{{ $json.output.changes }}\",\n  \"remaining_errors\": [\"empty\"]\n}\n\nCASE B: CONFIGURATION STILL HAS ERRORS\n\nIf you find errors, return EXACTLY this:\n\n{\n  \"status\": \"needs_revision\",\n  \"file_type\": \"{{ $json.output.file_type }}\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"service_name\": \"{{ $json.output.service_name }}\",\n  \"file_path\": \"{{ $json.output.file_path }}\",\n  \"compose_file\": \"{{ $json.output.compose_file }}\",\n  \"mode\": \"{{ $json.output.mode }}\",\n  \"content\": \"{{ $json.output.content }}\",\n  \"changes\": \"{{ $json.output.changes }}\",\n  \"remaining_errors\": [\n    \"error description 1 with line number\",\n    \"error description 2 with line number\"\n  ]\n}\n\n===========================================\nCRITICAL RULES\n===========================================\n\n- If configuration is error-free → return Case A\n- If errors still exist → return Case B\n- If {{ $json.output.mode }} = app, you MUST use SIMPLE MEMORY\n- Do NOT report errors that are not clearly visible in the content. When in doubt, return Case A.- Do NOT suggest improvements or optimizations\n- Be precise: include line numbers when possible\n- Each error description should be concise (max 15 words)\n- The original \"content\" must NEVER be modified\n- Return ONLY the JSON, no extra text",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        240,
+        736
+      ],
+      "id": "3ce27c7f-5fd8-41e0-91c0-6d6d6f51f8dd",
+      "name": "COMPROBADOR",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-haiku-4.5",
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        240,
+        976
+      ],
+      "id": "38fb1b5e-f1ce-4381-abab-ce0561a866c8",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const agentOutput = $input.first().json.output;\n\nconst changes = agentOutput?.changes || [];\nconst fileType = agentOutput?.file_type || 'unknown';\n\nif (changes.length === 0) {\n    return [];\n}\n\nreturn [{\n    json: {\n        changes: changes,\n        file_type: fileType,\n        metadata: {\n            source: \"n8n_correction\",\n            timestamp: new Date().toISOString()\n        }\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        1216
+      ],
+      "id": "971a0df9-4798-491e-b2c9-9cee16b5ba92",
+      "name": "GUARDAR EN CHROMA"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-haiku-4.5",
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        1440
+      ],
+      "id": "792c06b9-bc07-4bb3-8fbb-6f1353a8d8d0",
+      "name": "OpenRouter Chat Model5",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an assistant that uploads solutions to a Chroma vector database.\n\n## INPUT DATA\n\nYou will receive:\n\n- solutions (array of strings): [{{ $json.changes }}]\n- file_type: \"{{ $json.file_type }}\"\n\n## RULES\n\nONLY proceed if file_type is one of: code, config, docker, env\n\nIf file_type is NOT in this list, DO NOTHING and return: {\"status\": \"skipped\", \"reason\": \"invalid file_type\"}\n\n## CHROMA UPLOAD\n\nUse the http_request_tool for EACH solution individually.\n\nFor each item in the solutions array, call the tool with:\n\n{\n  \"text\": \"the individual solution text\",\n  \"collection\": \"{{ $json.file_type }}\"\n}\n\n\nIf there are 3 solutions, you must call the tool 3 times (once per solution).\n\nDo NOT upload all solutions together. Upload them one by one.\n\n## EXAMPLES\n\nExample 1:\nInput: solutions = [\"fixed semicolon\", \"removed start;\"], file_type=\"code\"\nActions: \n  - Call 1: file:\"fixed semicolon\", collection:\"code\"\n  - Call 2: file:\"removed start;\", collection:\"code\"\n\nExample 2:\nInput: solutions = [\"fixed missing semicolon\"], file_type=\"code\"\nAction: \n  - Call 1: file:\"fixed missing semicolon\", collection:\"code\"\n\n## RESPONSE FORMAT\n\nAfter uploading all solutions, return:\n\n{\"status\": \"uploaded\", \"total\": 2, \"collection\": \"{{ $json.file_type }}\", \"file_type\": \"{{ $json.file_type }}\"}\n\nIf skipped:\n{\"status\": \"skipped\", \"reason\": \"invalid file_type\", \"file_type\": \"{{ $json.file_type }}\"}\n\nIf error:\n{\"status\": \"error\", \"message\": \"error description\"}\n\nCRITICAL: \n- Do NOT upload if file_type is not code, config, docker, or env.\n- Upload EACH solution individually, NOT all together.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1536,
+        1216
+      ],
+      "id": "da22c2b9-325d-4aa3-af2b-aa6fe992ac75",
+      "name": "GUARDAR EN CHROMA1",
+      "retryOnFail": true,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "toolDescription": "Stores a new Nginx error solution into the Chroma vector database. Use this tool to save error fixes so they can be retrieved in the future for automatic correction.",
+        "method": "POST",
+        "url": "http://127.0.0.1:8001/ingest",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        1680,
+        1488
+      ],
+      "id": "b42e3eff-424f-4506-b45d-4c59f78e2851",
+      "name": "insert_chroma"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/apps",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3824,
+        336
+      ],
+      "id": "edba0311-4844-4052-9aba-aefbeca73ce9",
+      "name": "Webhook1",
+      "webhookId": "8580588c-7ad5-4b9e-be2e-e0bb9c38237b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst body = input.body || input;\n\nconst appPath = body.app_path || '';\nconst archivos = body.archivos || [];\nconst outputPath = body.output_path || 'sobrescribir';\n\nconst items = archivos.map(filename => ({\n    json: {\n        filename: filename,\n        app_path: appPath,\n        output_path: outputPath\n    }\n}));\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3616,
+        336
+      ],
+      "id": "bfdb407e-a673-4f4f-9c71-6176f1c15f15",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -3408,
+        336
+      ],
+      "id": "e53686c6-f81b-4ce0-a692-270eb2c6a20f",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nconst filename = input.filename;\nconst rutaBase = input.app_path || '';\n\nconst command = `cat \"${rutaBase}/${filename}\" 2>/dev/null || echo \"#ERROR\"`;\n\nreturn [{\n    json: {\n        ...input,\n        command: command\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3072,
+        400
+      ],
+      "id": "b8c93986-d944-44c8-b90c-1fafcd43592b",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "command": "={{ $json.command }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -2800,
+        400
+      ],
+      "id": "df6b8dfe-d21c-4de5-800e-ec1bfe6aeacc",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json;\nconst datos = $('Code in JavaScript4').first().json || {};\n\nconst content = output.stdout || '';\nconst filename = datos.filename || '';\n\nreturn [{\n    json: {\n        file_name: filename,\n        file_content: content,\n        mode: 'app'\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2560,
+        400
+      ],
+      "id": "678a6623-e180-4272-9786-226906c21f9f",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        464
+      ],
+      "id": "442a63a1-df03-48e1-bca0-e6aeb07f0484",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "={{ $json.ruta_destino }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        432,
+        480
+      ],
+      "id": "6eee67e0-7bb5-4484-8f4b-38c15f4f1273",
+      "name": "Read/Write Files from Disk2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const app_path = $('Webhook1').first().json.body.app_path;\nconst output_path = $('Webhook1').first().json.body.output_path || 'sobrescribir';\n\nconst archivo = $input.first().json;\n\nconst filename = archivo.file_name || '';\nconst content = archivo.content || '';\n\nlet ruta_destino = '';\nif (output_path === 'sobrescribir') {\n    ruta_destino = `${app_path}\\\\${filename}`;\n} else {\n    ruta_destino = `${output_path}\\\\${filename}`;\n}\n\nconst contentBase64 = Buffer.from(content, 'utf8').toString('base64');\n\nreturn [{\n    binary: {\n        data: {\n            data: contentBase64,\n            fileName: filename,\n            mimeType: 'text/plain'\n        }\n    },\n    json: {\n        filename: filename,\n        ruta_destino: ruta_destino,\n        timestamp: new Date().toISOString()\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        480
+      ],
+      "id": "232dab21-a362-4540-b540-010ae2a0ea84",
+      "name": "Code in JavaScript15"
+    },
+    {
+      "parameters": {
+        "jsCode": "const container = $input.first().json;\n\nconst fileName = container.file_name || container.filename || '';\nconst serviceName = container.service_name || container.service || '';\nconst filePath = container.file_path || '';\nconst fileContent = container.file_content || container.content || '';\nconst composeFile = container.compose_file || 'docker-compose.yml';\nconst mode = container.mode;\n\nconst fileExtension = fileName.split('.').pop().toLowerCase();\n\nconst clasificacion = {\n    // CODE\n    py: \"code\", js: \"code\", ts: \"code\", go: \"code\", java: \"code\", rb: \"code\",\n    php: \"code\", c: \"code\", cpp: \"code\", cs: \"code\", rs: \"code\", swift: \"code\",\n    kt: \"code\", scala: \"code\", pl: \"code\", lua: \"code\", r: \"code\", m: \"code\",\n    sh: \"code\", bash: \"code\", ps1: \"code\", bat: \"code\", jsx: \"code\", tsx: \"code\",\n    vue: \"code\", svelte: \"code\", dart: \"code\", groovy: \"code\", clj: \"code\",\n    hs: \"code\", erl: \"code\", ex: \"code\", nim: \"code\", cr: \"code\", zig: \"code\",\n    v: \"code\", fs: \"code\",\n    \n    // CONFIG\n    yml: \"config\", yaml: \"config\", json: \"config\", xml: \"config\", toml: \"config\",\n    ini: \"config\", conf: \"config\", cfg: \"config\", properties: \"config\",\n    tf: \"config\", tfvars: \"config\", hcl: \"config\",\n    \n    // DATA\n    sql: \"data\", db: \"data\", sqlite: \"data\", sqlite3: \"data\",\n    csv: \"data\", tsv: \"data\", parquet: \"data\", jsonl: \"data\", ndjson: \"data\",\n    log: \"data\", out: \"data\", err: \"data\",\n    \n    // DEPS\n    \"package.json\": \"deps\", \"package-lock.json\": \"deps\", \"yarn.lock\": \"deps\",\n    \"pnpm-lock.yaml\": \"deps\", \"requirements.txt\": \"deps\", \"pipfile\": \"deps\",\n    \"pipfile.lock\": \"deps\", \"pyproject.toml\": \"deps\", \"poetry.lock\": \"deps\",\n    \"go.mod\": \"deps\", \"go.sum\": \"deps\", \"cargo.toml\": \"deps\", \"cargo.lock\": \"deps\",\n    \"gemfile\": \"deps\", \"gemfile.lock\": \"deps\", \"composer.json\": \"deps\",\n    \"composer.lock\": \"deps\", \"pubspec.yaml\": \"deps\",\n    \n    // ENV\n    env: \"env\",\n    \n    // DOCKER\n    html: \"docker\", css: \"docker\", scss: \"docker\", md: \"docker\",\n    pdf: \"docker\", jpg: \"docker\", png: \"docker\", svg: \"docker\", gif: \"docker\",\n    ico: \"docker\", webp: \"docker\", mp4: \"docker\", mp3: \"docker\"\n};\n\nconst nombresEspeciales = {\n    \"dockerfile\": \"docker\",\n};\n\nlet fileType = \"code\";\nconst nombreLower = fileName.toLowerCase();\n\nif (nombresEspeciales[nombreLower]) {\n    fileType = nombresEspeciales[nombreLower];\n} else if (nombreLower.startsWith(\".env\")) {\n    fileType = \"env\";\n} else if (clasificacion[fileExtension]) {\n    fileType = clasificacion[fileExtension];\n}\n\nreturn [{\n    json: {\n        file_name: fileName,\n        service_name: serviceName,\n        file_path: filePath,\n        file_content: fileContent,\n        compose_file: composeFile,\n        mode: mode,\n        file_type: fileType,\n        file_extension: fileExtension\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1536,
+        960
+      ],
+      "id": "95d0c1eb-4901-494e-ac66-4010f5a982af",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $execution.id }}",
+        "contextWindowLength": 30
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -896,
+        1456
+      ],
+      "id": "37c48706-3f3a-4020-b6ad-9396d4bc5d2a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $execution.id }}",
+        "contextWindowLength": 30
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        1088
+      ],
+      "id": "fa8f1174-8100-419d-acea-fd6e2e97146b",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c373e41c-b265-49cc-be11-6c204927db48",
+              "leftValue": "={{ $json.corrected_files[0].mode }}",
+              "rightValue": "contenedor",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1008,
+        352
+      ],
+      "id": "2861e051-f910-40ac-a33f-62c4b8483f72",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst archivos = input.corrected_files || [];\n\nconst items = archivos.map(archivo => ({\n    json: {\n        file_name: archivo.file_name,\n        content: archivo.content,\n        status: archivo.status,\n        changes: archivo.changes,\n    }\n}));\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        464
+      ],
+      "id": "d1c2c6f2-6479-42fb-9523-fcc1d1bdf35f",
+      "name": "Code in JavaScript13"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2272,
+        336
+      ],
+      "id": "dfdc8d44-b741-4d93-847c-acf0edd5acd0",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"status\": { \"type\": \"string\" },\n    \"file_type\": { \"type\": \"string\" },\n    \"file_name\": { \"type\": \"string\" },\n    \"service_name\": { \"type\": \"string\" },\n    \"file_path\": { \"type\": \"string\" },\n    \"compose_file\": { \"type\": \"string\" },\n    \"mode\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"changes\": { \"type\": \"string\" },\n    \"remaining_errors\": { \n      \"type\": \"array\", \n      \"items\": { \"type\": \"string\" }\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        944
+      ],
+      "id": "eb6023a4-b5cd-4279-83f9-cf2acc4f4034",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const archivos = $('Aggregate1').first().json.corrected_files || [];\n\nlet reporte = \"=== CORRECTIONS REPORT ===\\n\\n\";\n\narchivos.forEach(item => {\n  reporte += `📄 ${item.file_name}\\n`;\n  reporte += `   State: ${item.status}\\n`;\n  reporte += `   Changes: ${item.changes || 'No changes'}\\n\\n`;\n});\n\nreporte += `\\n✅ Container started successfully.\\n`;\nreporte += `Timestamp: ${new Date().toISOString()}`;\n\nconst buffer = Buffer.from(reporte, 'utf-8');\n\nreturn [{\n  binary: {\n    data: {\n      data: buffer.toString('base64'),\n      mimeType: 'text/plain',\n      fileName: 'corrections_report.txt'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "2635931c-498b-43fe-800c-104f7f2332c0",
+      "name": "REPORT"
+    },
+    {
+      "parameters": {
+        "jsCode": "const archivos = $('Aggregate1').first().json.corrected_files || [];\nlet reporte = \"=== CORRECTIONS REPORT ===\\n\\n\";\n\narchivos.forEach(item => {\n  reporte += `📄 ${item.file_name}\\n`;\n  reporte += `   State: ${item.status}\\n`;\n  reporte += `   Changes: ${item.changes || 'No changes'}\\n\\n`;\n});\n\nreporte += `\\n✅ App files correctly corrected.\\n`;\nreporte += `Timestamp: ${new Date().toISOString()}`;\n\nconst buffer = Buffer.from(reporte, 'utf-8');\n\nreturn [{\n  binary: {\n    data: {\n      data: buffer.toString('base64'),\n      mimeType: 'text/plain',\n      fileName: 'corrections_report.txt'\n    }\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        336
+      ],
+      "id": "e4406d70-4b01-4c94-ad8d-0172294f104a",
+      "name": "REPORT2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript8": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items3": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command5": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript9": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript10": {
+      "main": [
+        [
+          {
+            "node": "Execute Command5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command6": {
+      "main": [
+        [
+          {
+            "node": "REPORT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript12",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read/Write Files from Disk1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript12": {
+      "main": [
+        [
+          {
+            "node": "Execute Command6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serper1": {
+      "ai_tool": [
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DETECTOR": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CORRECTOR-CHROMA": {
+      "main": [
+        [
+          {
+            "node": "COMPROBADOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CORRECTOR-SERPER": {
+      "main": [
+        [
+          {
+            "node": "FORMATEADOR",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GUARDAR EN CHROMA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript11": {
+      "main": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items5": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "FORMATEADOR",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FORMATEADOR": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "COMPROBADOR": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "COMPROBADOR",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GUARDAR EN CHROMA": {
+      "main": [
+        [
+          {
+            "node": "GUARDAR EN CHROMA1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "GUARDAR EN CHROMA1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert_chroma": {
+      "ai_tool": [
+        [
+          {
+            "node": "GUARDAR EN CHROMA1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [
+          {
+            "node": "REPORT2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript15": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "COMPROBADOR",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript13": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "COMPROBADOR",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REPORT": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REPORT2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "dcaa4f0e-708f-47df-bc53-f7eda304925f",
+  "meta": {
+    "instanceId": "75af844b993f15f935c9b4383bfc56f71df20a6a1f0b7d83cd483977774256d8"
+  },
+  "id": "U1cr6JWNpNZvTR1J",
+  "tags": []
+}

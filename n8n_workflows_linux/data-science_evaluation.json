@@ -1,0 +1,812 @@
+{
+  "name": "data-science_evaluation",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "anthropic/claude-haiku-4.5",
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        992,
+        576
+      ],
+      "id": "3cc9d7c1-3e2e-4631-a77d-ae1e3bb3d960",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"status\": { \"type\": \"string\" },\n    \"file_name\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"changes\": { \n      \"type\": \"array\", \n      \"items\": { \"type\": \"string\" }     \n    },\n    \"question\": { \"type\": \"string\" }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1280,
+        576
+      ],
+      "id": "3cfa5488-f66c-43ed-bc74-d316ba54c4ec",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search the web using Serper API.\nCall this tool with a 'query' parameter. Example: { \"query\": \"nginx magic_feature\" }",
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "num": 5
+      },
+      "type": "n8n-nodes-serper-search.serperTool",
+      "typeVersion": 1,
+      "position": [
+        2240,
+        1088
+      ],
+      "id": "49156d3f-1385-4465-9e89-bb5cb6a9ae53",
+      "name": "Serper1",
+      "credentials": {
+        "serperApi": {
+          "id": "aaEAZ3t6D2d7u8GE",
+          "name": "Serper account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8001/query",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        1136,
+        624
+      ],
+      "id": "a86af4b9-16d0-4ca4-8c41-c76921cc92b7",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert data science Python code analyzer specializing in pandas, numpy, matplotlib, and scipy.\n\nFILE TO ANALYZE:\n{{ $json.file_content }}\n\nINSTRUCTIONS:\n\nThe code above is supposed to fulfill the requirements described in the question:\n{{ $json.question }}\n\nHowever, the code may have errors AND may not fully satisfy the question requirements.\n\nScan the file for:\n1. REAL errors (syntax, semantic, or logic issues)\n2. Missing functionality that prevents the code from fulfilling the question requirements\n\nDo NOT suggest improvements or optimizations beyond fixing errors and meeting the question requirements.\n\nFor each error or missing requirement found, provide a SHORT, KEYWORD-BASED description (max 20 words per issue).\n\nIMPORTANT: Your response MUST be a JSON object with these fields:\n\n- file_name: \"{{ $json.file_name }}\"\n- content: \"{{ $json.file_content }}\"\n- question: \"{{ $json.question }}\"\n- suggested_errors: your array of detected issues (errors OR missing requirements)\n\nReturn ONLY the JSON object. No extra text.\n\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        368,
+        848
+      ],
+      "id": "8e3f0c5b-a013-4223-8ad0-5180e3e9e698",
+      "name": "DETECTOR",
+      "retryOnFail": true,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-haiku-4.5",
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        288,
+        1056
+      ],
+      "id": "d1016ee8-3f83-4777-900e-d9f28c845d69",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"file_name\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"question\": { \"type\": \"string\" },\n    \"suggested_errors\": { \n      \"type\": \"array\", \n      \"items\": { \"type\": \"string\" }\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        1056
+      ],
+      "id": "46b32424-4a6a-462c-abe9-7d95b0d3c3d5",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash",
+        "options": {
+          "maxTokens": 2000,
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        1088
+      ],
+      "id": "77798f72-a078-4b1c-87c2-99bdc0bf0a20",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"status\": { \"type\": \"string\" },\n    \"file_name\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"changes\": { \n      \"type\": \"array\", \n      \"items\": { \"type\": \"string\" }\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2384,
+        1088
+      ],
+      "id": "0ffbdf58-12c4-4258-a4bb-77a9f61d1f27",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert data science Python code analyzer specializing in pandas, numpy, matplotlib, and scipy.\n\nYou will receive a code, a question, and suggested errors. The code must meet the requirements of the question without having any other type of errors. A previous agent has analyzed it, which is why you have access to the suggested errors.\n\nCODE TO CORRECT:\n{{ $json.output.content }}\n\nORIGINAL QUESTION REQUIREMENTS:\n{{ $json.output.question }}\n\nSUGGESTED ERRORS (from previous analysis):\n{{ $json.output.suggested_errors }}\n\n## AVAILABLE ACTION\nYou have ONE action available. Search Chroma for relevant code patterns BEFORE providing your final answer.\n\nTOOL NAME: http_request_tool\nPARAMETERS (send ONLY these):\n- query: string (max 20 words)\n- collection: \"data_science_patterns\"\n\nWhen you need to search Chroma, respond with this EXACT format:\n{\n  \"query\": \"your search query here\",\n  \"collection\": \"data_science_patterns\"\n}\n\n## INSTRUCTIONS\n\n**Step 1 - Generate a search query based on the missing requirements or errors**\nExamples of good queries for this collection:\n- \"matplotlib subplot 3x3 grid sharex sharey no spacing\"\n- \"boxplot notch outlier symbols horizontal matplotlib\"\n- \"pandas groupby aggregate multiple columns\"\n- \"numpy linspace meshgrid 3d plot\"\n- \"matplotlib savefig dpi bbox_inches tight\"\n\n**Step 2 - Search Chroma (ONLY ONCE)**\nRespond with the JSON format shown above. Do NOT add any extra fields.\n\n**Step 3 - Provide final correction**\nAfter receiving search results, respond with your correction:\n\n{\n  \"status\": \"fixed\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"FULL CORRECTED CODE HERE (preserve original formatting, use literal newlines)\",\n  \"changes\": [\"change 1\", \"change 2\"],\n  \"question\": \"{{ $json.output.question }}\"\n}\n\n## CRITICAL RULES\n- Search Chroma MAXIMUM ONCE. Base your query on the MOST SPECIFIC missing requirement.\n- If search results are unhelpful, proceed with your own knowledge.\n- ALWAYS provide a final JSON response.\n- Ensure the corrected code meets ALL question requirements.\n- Return code with NORMAL newlines (do NOT escape as \\n).\n- Do NOT add features or change logic beyond fixing errors AND meeting requirements.\n- Return ONLY valid JSON, no extra text.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1056,
+        384
+      ],
+      "id": "56f64a3a-f1f0-4741-a924-1effe63e34a9",
+      "name": "CORRECTOR-CHROMA",
+      "retryOnFail": true,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=FILE TO ANALYZE:\n{{ $json.output.content }}\n\nORIGINAL QUESTION REQUIREMENTS:\n{{ $json.output.question }}\n\nREMAINING ISSUES TO FIX:\n{{ $json.output.remaining_issues }}\n\nCONTEXT:\nThis file was marked as \"needs_revision\" because it has syntax/logic errors OR does not meet the original question requirements.\n\nAVAILABLE TOOL:\nYou can search the internet for solutions. Use SERPER to find relevant code examples.\n\nTOOL CALL FORMAT:\n{\"tool\":\"serper\",\"arguments\":{\"query\":\"your search query here\"}}\n\nGOOD QUERY EXAMPLES:\n- \"matplotlib boxplot multiple subplots two rows three columns\"\n- \"pandas create new column based on condition\"\n- \"matplotlib gridspec wspace hspace zero spacing\"\n\nINSTRUCTIONS:\n1. If you need help fixing specific issues, call SERPER once with a focused query\n2. After receiving results (or if no search needed), provide the corrected code\n3. Ensure ALL original question requirements are met\n\nCRITICAL - JSON ESCAPING RULES FOR CONTENT FIELD:\nWhen you generate the \"content\" field with Python code, you MUST use single backslash + n for newlines: \\n\nCORRECT example:\n\"content\": \"import matplotlib\\nmatplotlib.use('Agg')\\n\\nplt.plot(data)\"\nINCORRECT example (DO NOT use double backslashes):\n\"content\": \"import matplotlib\\\\nmatplotlib.use('Agg')\\\\n\\\\nplt.plot(data)\"\nREMEMBER: Use \\n NOT \\\\n. Single backslash + n = good. Double backslash + n = bad for JSON parsing.\n\nRESPONSE FORMAT (JSON only):\n{\n  \"status\": \"fixed\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"full corrected code here\",\n  \"changes\": [\"change 1\", \"change 2\"]\n}\n\nCRITICAL RULES:\n- Search at most ONCE. Only if needed.\n- Return ONLY valid JSON. No extra text.\n- Preserve original formatting.\n- Fulfill ALL question requirements.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2160,
+        864
+      ],
+      "id": "1011e479-b76b-45af-a14e-ba01ea7d3c9a",
+      "name": "CORRECTOR-SERPER"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4c71d521-56ba-4285-9b3d-f85ed1adc0aa",
+              "leftValue": "={{ $json.output.suggested_errors.length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        848
+      ],
+      "id": "38f781b6-48fd-4586-b3fd-f240b1251a02",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "batchSize": 2,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -464,
+        352
+      ],
+      "id": "f6960820-5648-462d-8f74-eb4ddf98adb2",
+      "name": "Loop Over Items5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a89a950d-07e7-4865-9963-b17a579aaff0",
+              "leftValue": "={{ $json.output.status }}",
+              "rightValue": "verified",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "404ee31f-8be5-4115-b38a-ee9fcb25b6c1",
+              "leftValue": "={{ $json.output.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2048,
+        384
+      ],
+      "id": "367a12c1-3c06-440c-a80c-e6b44619f933",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const outputAgente = $input.first().json.output;\n\nconst resultado = {\n  status: outputAgente.status || 'unknown',\n  file_name: outputAgente.file_name || '',\n  content: outputAgente.content || '',\n  changes: outputAgente.changes\n};\n\nreturn [{\n  json: resultado\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2720,
+        368
+      ],
+      "id": "445b4526-2adf-4a2b-99d3-8cb6ae6cc980",
+      "name": "FORMATEADOR"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "corrected_files",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8ef165f2-2c68-4539-94e9-646fde82914c",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert data science Python code analyzer specializing in pandas, numpy, matplotlib, and scipy.\n\nINPUT DATA STRUCTURE:\n{\n  \"status\": \"{{ $json.output.status }}\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"{{ $json.output.content }}\",\n  \"changes\": \"{{ $json.output.changes }}\",\n  \"question\": \"{{ $json.output.question }}\"\n}\n\nYOUR VERIFICATION TASK:\n\n1. Analyze the file in the \"content\" field.\n\n2. Verify TWO things:\n   - The file has NO syntax, semantic, or logic errors\n   - The file fulfills ALL requirements from the question\n\n3. DO NOT suggest improvements or optimizations, only detect actual errors or missing requirements.\n\nOUTPUT FORMAT - Return ONLY the JSON object:\n\nCASE A: FILE IS ERROR-FREE AND MEETS REQUIREMENTS\n{\n  \"status\": \"verified\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"{{ $json.output.content }}\",\n  \"changes\": \"{{ $json.output.changes }}\",\n  \"remaining_issues\": \"\",\n  \"question\": \"{{ $json.output.question }}\"\n}\n\nCASE B: FILE STILL HAS ERRORS OR MISSING REQUIREMENTS\n{\n  \"status\": \"needs_revision\",\n  \"file_name\": \"{{ $json.output.file_name }}\",\n  \"content\": \"{{ $json.output.content }}\",\n  \"changes\": \"\",\n  \"remaining_issues\": \"issue 1, issue 2...\",\n  \"question\": \"{{ $json.output.question }}\"\n}\n\nCRITICAL JSON ESCAPE RULES:\n\nWhen you include the \"content\" field (which contains Python code), you MUST escape it properly for JSON:\n\n1. Escape ALL newlines as \\\\n (two characters: backslash + n)\n2. Escape ALL double quotes inside the code as \\\\\"\n3. Escape ALL backslashes as \\\\\\\\\n\nEXAMPLE - If the Python code is:\n  import matplotlib\n  plt.plot(x, y)  # This is \"cool\"\n\nYou MUST write it as:\n  \"content\": \"import matplotlib\\\\nplt.plot(x, y)  # This is \\\\\"cool\\\\\"\"\n\nDO NOT write real newlines inside the JSON string. Use \\\\n instead.\n\nREMEMBER:\n- If file is error-free AND meets requirements → return Case A\n- If errors exist OR requirements not met → return Case B\n- Be precise: include line numbers when possible\n- Return ONLY raw JSON. NO markdown. NO backticks. NO extra text.\n- remaining_issues and changes must be a single string with commas separating issues. NOT an array. NO double quotes inside.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1536,
+        384
+      ],
+      "id": "636b114e-2cbf-468f-8812-375a1bc735de",
+      "name": "COMPROBADOR",
+      "retryOnFail": true,
+      "maxTries": 4
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash",
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        624
+      ],
+      "id": "f5da8091-7d2a-42ef-b316-5ced23631cf8",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LAxj12vdQtWjtWel",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -720,
+        304
+      ],
+      "id": "7438f159-727d-4025-a4eb-213c792d55a2",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst body = input.body || input;\n\nconst folderPath = body.folder_path || '';\nconst configFiles = body.files || [];\n\nconst items = configFiles.map(filename => ({\n    json: {\n        config_file: filename,\n        folder_path: folderPath\n    }\n}));\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2032,
+        304
+      ],
+      "id": "1dc98c80-ddec-4df2-918c-5643e21aa3a0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1776,
+        304
+      ],
+      "id": "a480f60b-e85f-4f81-9751-82a598ba7dfc",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "command": "={{ $json.comando }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        400
+      ],
+      "id": "1bd93938-99e2-4e1a-8530-8e900dc27048",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst fileContent = input.stdout || '';\n\nreturn [{\n    json: {\n        config_content: fileContent,\n        config_file: $('Code in JavaScript17').first().json.config_file,\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        400
+      ],
+      "id": "f2a71c40-e4ae-487c-a736-c72e7aa201b4",
+      "name": "Code in JavaScript16"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/eval",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2256,
+        304
+      ],
+      "id": "1612b2c5-71b9-4cec-999f-6e809bf13cd2",
+      "name": "Webhook1",
+      "webhookId": "8580588c-7ad5-4b9e-be2e-e0bb9c38237b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nconst folderPath = input.folder_path || '';\nconst configFile = input.config_file || '';\n\nconst comando = `cat \"${folderPath}/${configFile}\" 2>/dev/null || echo \"#ERROR\"`;\n\nreturn [{\n    json: {\n        ...input,\n        comando: comando\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1568,
+        400
+      ],
+      "id": "28b311e3-7914-43d0-8f3d-be4bb7f13a16",
+      "name": "Code in JavaScript17"
+    },
+    {
+      "parameters": {
+        "jsCode": "const pyItem = $input.all()[0].json;\nconst questionItem = $input.all()[1].json;\n\n// Extraer datos\nconst fileName = pyItem.config_file;\nconst fileContent = pyItem.config_content;\nconst question = questionItem.config_content;\n\nconst combinedOutput = {\n  file_name: fileName,\n  file_content: fileContent,\n  question: question\n}\n\nreturn combinedOutput;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        688
+      ],
+      "id": "348c0a88-f808-4e4b-a05e-964498737fcc",
+      "name": "Code in JavaScript11"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"status\": { \"type\": \"string\" },\n    \"file_name\": { \"type\": \"string\" },\n    \"content\": { \"type\": \"string\" },\n    \"changes\": { \"type\": \"string\" },\n    \"remaining_issues\": { \"type\": \"string\" },\n    \"question\": { \"type\": \"string\" }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1696,
+        592
+      ],
+      "id": "90b9c3c2-094d-4480-8d57-1447f8bbf5e7",
+      "name": "Structured Output Parser1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serper1": {
+      "ai_tool": [
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DETECTOR": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CORRECTOR-CHROMA": {
+      "main": [
+        [
+          {
+            "node": "COMPROBADOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CORRECTOR-SERPER": {
+      "main": [
+        [
+          {
+            "node": "FORMATEADOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "CORRECTOR-CHROMA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items5": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "FORMATEADOR",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CORRECTOR-SERPER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FORMATEADOR": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "COMPROBADOR": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "COMPROBADOR",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript17",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript16": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript17": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript11": {
+      "main": [
+        [
+          {
+            "node": "DETECTOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "COMPROBADOR",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b1c55795-f473-493b-90b3-4275afdc5e1b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "75af844b993f15f935c9b4383bfc56f71df20a6a1f0b7d83cd483977774256d8"
+  },
+  "id": "5yPlwClwLWWt0RHm",
+  "tags": []
+}
