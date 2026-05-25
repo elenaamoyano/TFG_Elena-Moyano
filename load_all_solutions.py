@@ -4,6 +4,8 @@ from datetime import datetime
 
 FASTAPI_URL = "http://localhost:8001"
 
+from pathlib import Path
+
 BASE_DIR = Path(__file__).parent
 
 SOLUCIONES_POR_COLECCION = {
