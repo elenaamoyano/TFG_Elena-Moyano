@@ -168,8 +168,13 @@ If it works, you can run the app using:
 ### System requirements
 
 | Requirement | Version |
-|-------------|---------|
+|------------|--------|
 | Node.js | 20.x or 22.x LTS |
-| Python | 3.12+ |
+| Python | 3.10–3.12 (recommended) |
 | npm | Included with Node.js |
-| Ports | 5678 (n8n), 8001 (Chroma), 8501 (Streamlit) |
+| n8n | 1.x (latest compatible with Node 22) |
+| Streamlit | 1.53.0 |
+| FastAPI | 0.136.1 |
+| ChromaDB | 1.5.9 |
+| Ports | 5678 (n8n), 8001 (FastAPI), 8501 (Streamlit) |
+
