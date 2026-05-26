@@ -112,10 +112,10 @@ In n8n Personal panel, go to Credentials → Create Credential and add:
 - OpenRouter API Key (for LLMs)
 - Serper API Key
 
-### 7. Start Chroma API
+### 7. Start FastAPI
 
 ```bash
-cd chroma-api
+cd fastAPI
 pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
 python main.py
