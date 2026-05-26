@@ -29,7 +29,7 @@ if 'ruta_yml_validada' not in st.session_state:
 if 'archivos_yml' not in st.session_state:
     st.session_state.archivos_yml = []
 
-st.sidebar.title("🐳 Navegación")
+st.sidebar.title("🐳 Navigation")
 st.sidebar.divider()
 
 modo = st.sidebar.radio("Mode:", ["👤 User", "👑 Admin"])
@@ -569,5 +569,5 @@ if not st.session_state.modo_admin:
                             status_text.empty()
 
 st.sidebar.divider()
-st.sidebar.caption("🐳 Corrector NGINX + Base Conocimiento v2.0")
+st.sidebar.caption("🐳 Corrector + Knowledge Base v2.0")
 st.sidebar.caption("FastAPI + Chroma + Streamlit")
