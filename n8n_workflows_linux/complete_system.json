@@ -9,12 +9,12 @@
         -2256,
         704
       ],
-      "id": "0b5231a7-42b2-4bc9-aa69-0be34bdf9204",
+      "id": "69090ee6-fec8-4a9b-aafd-aef038e395c6",
       "name": "Merge2"
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json;\nconst archivosCorregidos = input.corrected_files || [];\nconst itemsValidos = archivosCorregidos.filter(item => \n  (item.status === 'fixed' || item.status === 'verified') && \n  item.content && \n  item.content.trim() !== ''\n);\n\nconst webhookData = $('Webhook').first().json.body;\nconst PROJECT_PATH = webhookData.project_path || '';\nconst OUTPUT_PATH = webhookData.output_path || \"sobrescribir\";\n\nconst resultados = [];\nitemsValidos.forEach(item => {\n  const fileName = item.file_name;\n  const serviceName = $('Webhook').first().json.body.service;\n  const composeFile = item.compose_file;\n  const changes = item.changes || [];\n  const carpeta = item.file_path || '';\n  \n  let rutaEscritura = '';\n  if (OUTPUT_PATH !== \"sobrescribir\") {\n    rutaEscritura = `${OUTPUT_PATH}\\\\${fileName}`;\n  } else {\n    rutaEscritura = `${carpeta}\\\\${fileName}`;\n  }\n\n  let rutaDestino = '';\n  if (OUTPUT_PATH !== \"sobrescribir\") {\n    rutaDestino = `${OUTPUT_PATH}`;\n  } else {\n    rutaDestino = `${carpeta}`;\n  }\n  \n  const contentBase64 = Buffer.from(item.content, 'utf8').toString('base64');\n  \n  resultados.push({\n    binary: {\n      data: {\n        data: contentBase64,\n        fileName: fileName,\n        mimeType: 'text/plain'\n      }\n    },\n    json: {\n      file_name: fileName,\n      service_name: serviceName,\n      project_path: PROJECT_PATH,\n      ruta_escritura: rutaEscritura,\n      ruta_completa: rutaDestino,\n      carpeta_original: carpeta,\n      compose_file: composeFile,\n      cambios_realizados: changes,\n      timestamp: new Date().toISOString(),\n      output_path: OUTPUT_PATH\n    }\n  });\n});\nreturn resultados;"
+        "jsCode": "const input = $input.first().json;\nconst archivosCorregidos = input.corrected_files || [];\nconst itemsValidos = archivosCorregidos.filter(item => \n  (item.status === 'fixed' || item.status === 'verified') && \n  item.content && \n  item.content.trim() !== ''\n);\n\nconst webhookData = $('Webhook').first().json.body;\nconst PROJECT_PATH = webhookData.project_path || '';\nconst OUTPUT_PATH = webhookData.output_path || \"sobrescribir\";\n\nconst resultados = [];\nitemsValidos.forEach(item => {\n  const fileName = item.file_name;\n  const serviceName = $('Webhook').first().json.body.service;\n  const composeFile = item.compose_file;\n  const changes = item.changes || [];\n  const carpeta = item.file_path || '';\n  \n  let rutaEscritura = '';\n  if (OUTPUT_PATH !== \"sobrescribir\") {\n    rutaEscritura = `${OUTPUT_PATH}/${fileName}`;\n  } else {\n    rutaEscritura = `${carpeta}/${fileName}`;\n  }\n\n  let rutaDestino = '';\n  if (OUTPUT_PATH !== \"sobrescribir\") {\n    rutaDestino = `${OUTPUT_PATH}`;\n  } else {\n    rutaDestino = `${carpeta}`;\n  }\n  \n  const contentBase64 = Buffer.from(item.content, 'utf8').toString('base64');\n  \n  resultados.push({\n    binary: {\n      data: {\n        data: contentBase64,\n        fileName: fileName,\n        mimeType: 'text/plain'\n      }\n    },\n    json: {\n      file_name: fileName,\n      service_name: serviceName,\n      project_path: PROJECT_PATH,\n      ruta_escritura: rutaEscritura,\n      ruta_completa: rutaDestino,\n      carpeta_original: carpeta,\n      compose_file: composeFile,\n      cambios_realizados: changes,\n      timestamp: new Date().toISOString(),\n      output_path: OUTPUT_PATH\n    }\n  });\n});\nreturn resultados;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -22,7 +22,7 @@
         -624,
         160
       ],
-      "id": "19710803-3a1a-426c-a3a6-b08b09edbf07",
+      "id": "ffa56e59-d4c1-4d9f-9223-4efa992c8a16",
       "name": "Code in JavaScript3"
     },
     {
@@ -35,7 +35,7 @@
         -3584,
         704
       ],
-      "id": "afa3704f-1e4f-45bc-8aa8-b77803ededa0",
+      "id": "156b46b1-5c81-492b-8fdc-1d6faee0f62c",
       "name": "Code in JavaScript8"
     },
     {
@@ -48,7 +48,7 @@
         -3296,
         704
       ],
-      "id": "ea16fe6a-85d8-4701-9faf-02c21cf8ce8e",
+      "id": "5cf04a4e-1c2b-4a77-a2be-549f763d650a",
       "name": "Loop Over Items3"
     },
     {
@@ -62,7 +62,7 @@
         -2800,
         800
       ],
-      "id": "c7fdc60b-3dbf-4603-bed0-053d51c1160d",
+      "id": "23808e8b-9758-457b-a615-41ca5743e3a7",
       "name": "Execute Command5"
     },
     {
@@ -75,7 +75,7 @@
         -2544,
         800
       ],
-      "id": "a8153293-08d7-4119-96d7-701c3235b4b2",
+      "id": "42f03b43-e8e3-4a9b-96b6-b7e223cea876",
       "name": "Code in JavaScript9"
     },
     {
@@ -88,7 +88,7 @@
         -3088,
         800
       ],
-      "id": "06e4f78f-0021-4878-b989-7672c99e55e4",
+      "id": "9e8c91dc-f02c-4759-82ad-8e74abc62349",
       "name": "Code in JavaScript10"
     },
     {
@@ -105,7 +105,7 @@
         -48,
         176
       ],
-      "id": "a84948d7-002a-45a5-8041-187adfb619c9",
+      "id": "619d7bfc-60d5-4e3e-8ef9-483fb9d994db",
       "name": "Read/Write Files from Disk1"
     },
     {
@@ -119,7 +119,7 @@
         240,
         0
       ],
-      "id": "659efac2-e7ff-4cfc-9188-70df43ed8d42",
+      "id": "55e93343-268b-41e4-af1f-e98a808bbc2e",
       "name": "Execute Command6"
     },
     {
@@ -132,7 +132,7 @@
         -288,
         160
       ],
-      "id": "805ba8c5-44bc-490a-950e-63de82e91c02",
+      "id": "d036b3b8-3f61-4b49-8956-c54a24fd1441",
       "name": "Loop Over Items4"
     },
     {
@@ -145,7 +145,7 @@
         0,
         0
       ],
-      "id": "19c64f24-37a2-4f11-a53f-b3990585ffad",
+      "id": "c86b6881-0095-4565-bf77-6de8bebe40c9",
       "name": "Code in JavaScript12"
     },
     {
@@ -161,7 +161,7 @@
         -320,
         928
       ],
-      "id": "97e252e0-8c07-4728-955b-37dc81280bee",
+      "id": "f77e0068-efc6-4f79-98dc-1fbc39d812d6",
       "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
@@ -181,7 +181,7 @@
         -32,
         928
       ],
-      "id": "428f57cf-3abe-4d18-8fa8-a2758b14948e",
+      "id": "6b09f353-5f8d-49cd-a1c6-4708c10615ab",
       "name": "Structured Output Parser"
     },
     {
@@ -197,7 +197,7 @@
         928,
         1440
       ],
-      "id": "ccd4f3bb-5263-4212-9756-79478782c10f",
+      "id": "e78b2e45-b1bc-4fb6-a028-ed225c4a2071",
       "name": "Serper1",
       "credentials": {
         "serperApi": {
@@ -219,7 +219,7 @@
         -3824,
         704
       ],
-      "id": "3fb1b5e8-6028-400b-b246-df65c7eda563",
+      "id": "a17f3064-f765-4506-9c6c-ff514e6e5c66",
       "name": "Webhook",
       "webhookId": "8580588c-7ad5-4b9e-be2e-e0bb9c38237b"
     },
@@ -234,7 +234,7 @@
         672,
         224
       ],
-      "id": "d1b64e9b-3881-41a4-a7bd-174e29f1e703",
+      "id": "f22b7ff7-5726-4c47-bf2e-f8087acdf4c5",
       "name": "Respond to Webhook"
     },
     {
@@ -252,7 +252,7 @@
         -176,
         976
       ],
-      "id": "4ad060d8-670c-4a7f-a9b2-d8144bd0e632",
+      "id": "b705ef05-36ea-451a-974f-48ccc7cf73b6",
       "name": "HTTP Request"
     },
     {
@@ -268,7 +268,7 @@
         -944,
         1200
       ],
-      "id": "537ca8cd-180d-43b1-8243-fda656667284",
+      "id": "8fedcd51-f506-45df-b425-128ae1dd49eb",
       "name": "DETECTOR"
     },
     {
@@ -284,7 +284,7 @@
         -1024,
         1408
       ],
-      "id": "4d5174e4-3e96-4df5-ae4e-841752c24ef7",
+      "id": "c5f94592-4f34-4f40-8324-d29316b45b0f",
       "name": "OpenRouter Chat Model1",
       "credentials": {
         "openRouterApi": {
@@ -304,7 +304,7 @@
         -768,
         1408
       ],
-      "id": "b5c4163c-c987-4036-9f55-5b5ecdd686ae",
+      "id": "1aaa6ca2-8a70-4036-be8e-04e5b8b59f21",
       "name": "Structured Output Parser2"
     },
     {
@@ -320,7 +320,7 @@
         800,
         1440
       ],
-      "id": "48734a06-95d6-4426-bc06-a9001720b49d",
+      "id": "ea602b42-0a9c-413a-bfbb-6515dc5c552b",
       "name": "OpenRouter Chat Model2",
       "credentials": {
         "openRouterApi": {
@@ -340,7 +340,7 @@
         1072,
         1440
       ],
-      "id": "1e2e035a-5420-4448-9b4e-9a54e4bdb641",
+      "id": "5e0b555f-dcb1-4f2f-b876-7d808ddb948a",
       "name": "Structured Output Parser3"
     },
     {
@@ -356,7 +356,7 @@
         -256,
         736
       ],
-      "id": "d40dabc7-5348-413d-8faa-7f1def26ba62",
+      "id": "111dbfc2-1290-4d20-b754-5661a318d03e",
       "name": "CORRECTOR-CHROMA",
       "retryOnFail": true,
       "maxTries": 5
@@ -374,7 +374,7 @@
         848,
         1216
       ],
-      "id": "d0ed73bd-89f0-45c8-8e30-ce1fad9ce74c",
+      "id": "f4b149f5-493b-4d9d-bea2-ded405c94efd",
       "name": "CORRECTOR-SERPER"
     },
     {
@@ -408,7 +408,7 @@
         -576,
         1200
       ],
-      "id": "d6db15f0-12e6-4dff-8b1f-21625a3277dc",
+      "id": "c388c045-d752-4631-8e0a-192ce6c2f149",
       "name": "If2"
     },
     {
@@ -421,7 +421,7 @@
         -1232,
         1040
       ],
-      "id": "9dc6375f-227e-4fbf-9d05-d91ae4222c72",
+      "id": "56c44bcb-9190-4568-8aec-e1024d74b345",
       "name": "Code in JavaScript11"
     },
     {
@@ -434,7 +434,7 @@
         -1776,
         704
       ],
-      "id": "4bce6779-20d3-4783-bb3b-685cf4f84287",
+      "id": "e5ad3242-6b66-4e4a-8cb2-833dbc4ccf28",
       "name": "Loop Over Items5"
     },
     {
@@ -477,7 +477,7 @@
         736,
         736
       ],
-      "id": "8ffb5f9f-f1f8-4618-9e67-31ef140afa32",
+      "id": "8364afca-4b75-47e3-86f3-fdb0408ae083",
       "name": "If4"
     },
     {
@@ -490,7 +490,7 @@
         1408,
         720
       ],
-      "id": "98d9dce6-6e53-462b-a290-f9f4bc8c5d8e",
+      "id": "9567fddc-cdda-491c-9256-ae9e9c2ad6cd",
       "name": "FORMATEADOR"
     },
     {
@@ -505,7 +505,7 @@
         -1312,
         352
       ],
-      "id": "57c9a0f0-6ecc-4c20-9777-500e2de14466",
+      "id": "b67d55b3-31b0-415a-9436-1feff0388a34",
       "name": "Aggregate1"
     },
     {
@@ -521,7 +521,7 @@
         240,
         736
       ],
-      "id": "3ce27c7f-5fd8-41e0-91c0-6d6d6f51f8dd",
+      "id": "5740fc80-7d70-4050-bc46-fbdcf49fc1f5",
       "name": "COMPROBADOR",
       "retryOnFail": true
     },
@@ -538,7 +538,7 @@
         240,
         976
       ],
-      "id": "38fb1b5e-f1ce-4381-abab-ce0561a866c8",
+      "id": "de214346-2b35-445c-9a1f-c9862b247326",
       "name": "OpenRouter Chat Model3",
       "credentials": {
         "openRouterApi": {
@@ -557,7 +557,7 @@
         1296,
         1216
       ],
-      "id": "971a0df9-4798-491e-b2c9-9cee16b5ba92",
+      "id": "cfe810e3-e2ad-4c39-b469-2fee53cfe21f",
       "name": "GUARDAR EN CHROMA"
     },
     {
@@ -573,7 +573,7 @@
         1536,
         1440
       ],
-      "id": "792c06b9-bc07-4bb3-8fbb-6f1353a8d8d0",
+      "id": "0ea78c1f-f7bb-4ff3-8a59-d54864f689b9",
       "name": "OpenRouter Chat Model5",
       "credentials": {
         "openRouterApi": {
@@ -594,7 +594,7 @@
         1536,
         1216
       ],
-      "id": "da22c2b9-325d-4aa3-af2b-aa6fe992ac75",
+      "id": "a9131508-f34f-4c18-8cfa-dbebd87e93d5",
       "name": "GUARDAR EN CHROMA1",
       "retryOnFail": true,
       "maxTries": 5
@@ -615,7 +615,7 @@
         1680,
         1488
       ],
-      "id": "b42e3eff-424f-4506-b45d-4c59f78e2851",
+      "id": "c2f2ecd0-9e37-42a4-8461-1d061ef8a633",
       "name": "insert_chroma"
     },
     {
@@ -631,7 +631,7 @@
         -3824,
         336
       ],
-      "id": "edba0311-4844-4052-9aba-aefbeca73ce9",
+      "id": "d4a1efb9-206d-4a62-9271-65e3db530706",
       "name": "Webhook1",
       "webhookId": "8580588c-7ad5-4b9e-be2e-e0bb9c38237b"
     },
@@ -645,7 +645,7 @@
         -3616,
         336
       ],
-      "id": "bfdb407e-a673-4f4f-9c71-6176f1c15f15",
+      "id": "a1466193-7132-4500-8e89-fdcf64834bb4",
       "name": "Code in JavaScript"
     },
     {
@@ -658,7 +658,7 @@
         -3408,
         336
       ],
-      "id": "e53686c6-f81b-4ce0-a692-270eb2c6a20f",
+      "id": "52118164-e93d-4a6e-837e-5be69410bcfa",
       "name": "Loop Over Items"
     },
     {
@@ -671,7 +671,7 @@
         -3072,
         400
       ],
-      "id": "b8c93986-d944-44c8-b90c-1fafcd43592b",
+      "id": "6e2b7608-99c0-4857-8ba0-a91bf09df5cb",
       "name": "Code in JavaScript4"
     },
     {
@@ -684,7 +684,7 @@
         -2800,
         400
       ],
-      "id": "df6b8dfe-d21c-4de5-800e-ec1bfe6aeacc",
+      "id": "37cc51fd-244a-4508-b760-91d1c9700771",
       "name": "Execute Command"
     },
     {
@@ -697,7 +697,7 @@
         -2560,
         400
       ],
-      "id": "678a6623-e180-4272-9786-226906c21f9f",
+      "id": "a5bab03c-0353-4961-b513-89ee9c3f909d",
       "name": "Code in JavaScript5"
     },
     {
@@ -710,7 +710,7 @@
         -128,
         464
       ],
-      "id": "442a63a1-df03-48e1-bca0-e6aeb07f0484",
+      "id": "72f8005d-e1f0-473f-aef4-dd08ee4802a9",
       "name": "Loop Over Items2"
     },
     {
@@ -725,12 +725,12 @@
         432,
         480
       ],
-      "id": "6eee67e0-7bb5-4484-8f4b-38c15f4f1273",
+      "id": "229737c3-bc43-428b-98d7-d799d219a869",
       "name": "Read/Write Files from Disk2"
     },
     {
       "parameters": {
-        "jsCode": "const app_path = $('Webhook1').first().json.body.app_path;\nconst output_path = $('Webhook1').first().json.body.output_path || 'sobrescribir';\n\nconst archivo = $input.first().json;\n\nconst filename = archivo.file_name || '';\nconst content = archivo.content || '';\n\nlet ruta_destino = '';\nif (output_path === 'sobrescribir') {\n    ruta_destino = `${app_path}\\\\${filename}`;\n} else {\n    ruta_destino = `${output_path}\\\\${filename}`;\n}\n\nconst contentBase64 = Buffer.from(content, 'utf8').toString('base64');\n\nreturn [{\n    binary: {\n        data: {\n            data: contentBase64,\n            fileName: filename,\n            mimeType: 'text/plain'\n        }\n    },\n    json: {\n        filename: filename,\n        ruta_destino: ruta_destino,\n        timestamp: new Date().toISOString()\n    }\n}];"
+        "jsCode": "const app_path = $('Webhook1').first().json.body.app_path;\nconst output_path = $('Webhook1').first().json.body.output_path || 'sobrescribir';\n\nconst archivo = $input.first().json;\n\nconst filename = archivo.file_name || '';\nconst content = archivo.content || '';\n\nlet ruta_destino = '';\nif (output_path === 'sobrescribir') {\n    ruta_destino = `${app_path}/${filename}`;\n} else {\n    ruta_destino = `${output_path}/${filename}`;\n}\n\nconst contentBase64 = Buffer.from(content, 'utf8').toString('base64');\n\nreturn [{\n    binary: {\n        data: {\n            data: contentBase64,\n            fileName: filename,\n            mimeType: 'text/plain'\n        }\n    },\n    json: {\n        filename: filename,\n        ruta_destino: ruta_destino,\n        timestamp: new Date().toISOString()\n    }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -738,7 +738,7 @@
         176,
         480
       ],
-      "id": "232dab21-a362-4540-b540-010ae2a0ea84",
+      "id": "9fbda882-815d-4ce0-ab31-b7bb30fc0833",
       "name": "Code in JavaScript15"
     },
     {
@@ -751,7 +751,7 @@
         -1536,
         960
       ],
-      "id": "95d0c1eb-4901-494e-ac66-4010f5a982af",
+      "id": "c93118d1-fb68-4013-a7d4-e63074e0ee29",
       "name": "Code in JavaScript1"
     },
     {
@@ -766,7 +766,7 @@
         -896,
         1456
       ],
-      "id": "37c48706-3f3a-4020-b6ad-9396d4bc5d2a",
+      "id": "a75b0cef-3c65-45c1-8ed6-fd4c7c497021",
       "name": "Simple Memory"
     },
     {
@@ -781,7 +781,7 @@
         352,
         1088
       ],
-      "id": "fa8f1174-8100-419d-acea-fd6e2e97146b",
+      "id": "68db01f1-dfc3-4732-9db6-a2391d7857fc",
       "name": "Simple Memory1"
     },
     {
@@ -815,7 +815,7 @@
         -1008,
         352
       ],
-      "id": "2861e051-f910-40ac-a33f-62c4b8483f72",
+      "id": "4cf5ed1e-4aaa-4bd2-9f11-3ecf41ad5df0",
       "name": "If"
     },
     {
@@ -828,7 +828,7 @@
         -480,
         464
       ],
-      "id": "d1c2c6f2-6479-42fb-9523-fcc1d1bdf35f",
+      "id": "f2f4b496-312e-4814-bbd7-61f4099cbf25",
       "name": "Code in JavaScript13"
     },
     {
@@ -839,7 +839,7 @@
         -2272,
         336
       ],
-      "id": "dfdc8d44-b741-4d93-847c-acf0edd5acd0",
+      "id": "95fb2200-f84b-472c-821d-ad4607c949a3",
       "name": "Merge"
     },
     {
@@ -853,7 +853,7 @@
         416,
         944
       ],
-      "id": "eb6023a4-b5cd-4279-83f9-cf2acc4f4034",
+      "id": "072afc2d-a6e4-4e27-9149-1602f44d7b57",
       "name": "Structured Output Parser1"
     },
     {
@@ -866,7 +866,7 @@
         448,
         0
       ],
-      "id": "2635931c-498b-43fe-800c-104f7f2332c0",
+      "id": "59d0286c-349d-4d11-b4e4-89f90879efc0",
       "name": "REPORT"
     },
     {
@@ -879,7 +879,7 @@
         176,
         336
       ],
-      "id": "e4406d70-4b01-4c94-ad8d-0172294f104a",
+      "id": "bf522e9b-01d8-4478-9d15-313e094664bb",
       "name": "REPORT2"
     }
   ],
@@ -1523,10 +1523,10 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "dcaa4f0e-708f-47df-bc53-f7eda304925f",
+  "versionId": "ee18c46d-3cb7-4e93-9d53-91a3c5763ac4",
   "meta": {
     "instanceId": "75af844b993f15f935c9b4383bfc56f71df20a6a1f0b7d83cd483977774256d8"
   },
-  "id": "U1cr6JWNpNZvTR1J",
+  "id": "TL89PXqBidOm73zm",
   "tags": []
 }
