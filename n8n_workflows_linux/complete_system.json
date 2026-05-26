@@ -137,7 +137,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json;\n\nconst rutaCompleta = input.ruta_completa;\nconst service = input.service || input.service_name || '';\nconst composeFile = input.compose_file || '';\n\nif (!rutaCompleta || !service) {\n    return [{ json: { ...input, comando: \"\" } }];\n}\n\nconst comando = `cd \"${rutaCompleta}\" && docker-compose -f ${composeFile} up -d ${service}`;\n\n\nreturn [{ json: { ...input, comando } }];"
+        "jsCode": "const input = $input.first().json;\n\nconst rutaCompleta = input.ruta_completa;\nconst service = input.service || input.service_name || '';\nconst composeFile = input.compose_file || '';\n\nif (!rutaCompleta || !service) {\n    return [{ json: { ...input, comando: \"\" } }];\n}\n\nconst comando = `cd \"${rutaCompleta}\" && docker compose -f ${composeFile} up -d ${service}`;\n\n\nreturn [{ json: { ...input, comando } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
