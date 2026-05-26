@@ -116,6 +116,7 @@ In n8n Personal panel, go to Credentials → Create Credential and add:
 
 ```bash
 cd chroma-api
+pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
 python main.py
 ```
