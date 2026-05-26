@@ -9,7 +9,7 @@
         -2256,
         704
       ],
-      "id": "69090ee6-fec8-4a9b-aafd-aef038e395c6",
+      "id": "472263ad-2564-489e-af9e-766a9c9e7ec8",
       "name": "Merge2"
     },
     {
@@ -22,7 +22,7 @@
         -624,
         160
       ],
-      "id": "ffa56e59-d4c1-4d9f-9223-4efa992c8a16",
+      "id": "72d7f0b8-c037-4470-8ce5-c8309cf8220f",
       "name": "Code in JavaScript3"
     },
     {
@@ -35,7 +35,7 @@
         -3584,
         704
       ],
-      "id": "156b46b1-5c81-492b-8fdc-1d6faee0f62c",
+      "id": "34f7bcb9-f579-40a9-ae0a-dcb53c9e980a",
       "name": "Code in JavaScript8"
     },
     {
@@ -48,7 +48,7 @@
         -3296,
         704
       ],
-      "id": "5cf04a4e-1c2b-4a77-a2be-549f763d650a",
+      "id": "ad540fcf-a93f-4cd2-8aba-4aa1017fcad2",
       "name": "Loop Over Items3"
     },
     {
@@ -62,12 +62,12 @@
         -2800,
         800
       ],
-      "id": "23808e8b-9758-457b-a615-41ca5743e3a7",
+      "id": "bb62f309-1699-4c48-826d-3b2597f77a19",
       "name": "Execute Command5"
     },
     {
       "parameters": {
-        "jsCode": "const output = $input.first().json;\n\nlet fileContent = output.stdout || '';\nif (fileContent.includes('#ERROR')) fileContent = '';\n\nconst itemBucle = $('Loop Over Items3').first().json;\nconst serviceName = itemBucle.service;\nconst composeFile = itemBucle.compose_file;\nconst projectPath = itemBucle.project_path;\nconst filePath = itemBucle.file_path;\nconst fileName = itemBucle.file_name;\n\ntry {\n    const composePath = `${projectPath}\\\\${composeFile}`;\n    \n    const { execSync } = require('child_process');\n    const cmd = `type \"${composePath}\" | findstr /C:\"${serviceName}:\" -A 10 | findstr /C:\"container_name:\"`;\n    const result = execSync(cmd, { encoding: 'utf8', stdio: 'pipe' }).trim();\n    \n    if (result) {\n        const match = result.match(/container_name:\\s*[\"']?([^\"'\\n]+)/);\n        if (match && match[1]) {\n            containerName = match[1].trim();\n        }\n    }\n} catch (e) {\n    console.log(`No se pudo obtener container_name: ${e.message}`);\n}\n\nreturn [{\n    json: {\n        service_name: serviceName,\n        file_name: fileName,\n        file_path: filePath,\n        compose_file: composeFile,\n        file_content: fileContent.trim(),\n        mode: 'contenedor'\n    }\n}];"
+        "jsCode": "const output = $input.first().json;\n\nlet fileContent = output.stdout || '';\nif (fileContent.includes('#ERROR')) fileContent = '';\n\nconst itemBucle = $('Loop Over Items3').first().json;\nconst serviceName = itemBucle.service;\nconst composeFile = itemBucle.compose_file;\nconst projectPath = itemBucle.project_path;\nconst filePath = itemBucle.file_path;\nconst fileName = itemBucle.file_name;\n\nlet containerName = '';\n\ntry {\n    const composePath = `${projectPath}/${composeFile}`;\n    \n    const { execSync } = require('child_process');\n    const cmd = `cat \"${composePath}\" | grep -A 10 \"${serviceName}:\" | grep \"container_name:\"`;\n    const result = execSync(cmd, { encoding: 'utf8', stdio: 'pipe' }).trim();\n    \n    if (result) {\n        const match = result.match(/container_name:\\s*[\"']?([^\"'\\n]+)/);\n        if (match && match[1]) {\n            containerName = match[1].trim();\n        }\n    }\n} catch (e) {\n    console.log(`No se pudo obtener container_name: ${e.message}`);\n}\n\nreturn [{\n    json: {\n        service_name: serviceName,\n        file_name: fileName,\n        file_path: filePath,\n        compose_file: composeFile,\n        file_content: fileContent.trim(),\n        mode: 'contenedor'\n    }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -75,7 +75,7 @@
         -2544,
         800
       ],
-      "id": "42f03b43-e8e3-4a9b-96b6-b7e223cea876",
+      "id": "13164de3-b9b1-4b86-aa28-258ad1475788",
       "name": "Code in JavaScript9"
     },
     {
@@ -88,7 +88,7 @@
         -3088,
         800
       ],
-      "id": "9e8c91dc-f02c-4759-82ad-8e74abc62349",
+      "id": "de186c78-c9e5-4e85-ad2a-6c368e3e3d30",
       "name": "Code in JavaScript10"
     },
     {
@@ -105,7 +105,7 @@
         -48,
         176
       ],
-      "id": "619d7bfc-60d5-4e3e-8ef9-483fb9d994db",
+      "id": "6c1cf69c-d32b-4ebc-ae85-d0c621ed86d5",
       "name": "Read/Write Files from Disk1"
     },
     {
@@ -119,7 +119,7 @@
         240,
         0
       ],
-      "id": "55e93343-268b-41e4-af1f-e98a808bbc2e",
+      "id": "cf134bd9-465e-4bc4-afc8-e368d666c2de",
       "name": "Execute Command6"
     },
     {
@@ -132,7 +132,7 @@
         -288,
         160
       ],
-      "id": "d036b3b8-3f61-4b49-8956-c54a24fd1441",
+      "id": "9ceb2344-0af8-4268-946a-3cb6eb97bbae",
       "name": "Loop Over Items4"
     },
     {
@@ -145,7 +145,7 @@
         0,
         0
       ],
-      "id": "c86b6881-0095-4565-bf77-6de8bebe40c9",
+      "id": "830832f6-774a-413c-b977-7e7a82e25a47",
       "name": "Code in JavaScript12"
     },
     {
@@ -161,7 +161,7 @@
         -320,
         928
       ],
-      "id": "f77e0068-efc6-4f79-98dc-1fbc39d812d6",
+      "id": "a1e0a032-7d58-492b-97d6-ca88e83b74ec",
       "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
@@ -181,7 +181,7 @@
         -32,
         928
       ],
-      "id": "6b09f353-5f8d-49cd-a1c6-4708c10615ab",
+      "id": "36965979-d838-4d3e-a76a-7d7d57d12d76",
       "name": "Structured Output Parser"
     },
     {
@@ -197,7 +197,7 @@
         928,
         1440
       ],
-      "id": "e78b2e45-b1bc-4fb6-a028-ed225c4a2071",
+      "id": "b6c422a2-0272-4659-9bd2-ec24724809c5",
       "name": "Serper1",
       "credentials": {
         "serperApi": {
@@ -219,7 +219,7 @@
         -3824,
         704
       ],
-      "id": "a17f3064-f765-4506-9c6c-ff514e6e5c66",
+      "id": "535dc4ce-e62a-4d19-bc1b-a7d02e9c9983",
       "name": "Webhook",
       "webhookId": "8580588c-7ad5-4b9e-be2e-e0bb9c38237b"
     },
@@ -234,7 +234,7 @@
         672,
         224
       ],
-      "id": "f22b7ff7-5726-4c47-bf2e-f8087acdf4c5",
+      "id": "8ec77edc-6cab-4ed5-804e-40e4d1be973a",
       "name": "Respond to Webhook"
     },
     {
@@ -252,7 +252,7 @@
         -176,
         976
       ],
-      "id": "b705ef05-36ea-451a-974f-48ccc7cf73b6",
+      "id": "543c8743-02be-4eea-b613-04be929c4719",
       "name": "HTTP Request"
     },
     {
@@ -268,7 +268,7 @@
         -944,
         1200
       ],
-      "id": "8fedcd51-f506-45df-b425-128ae1dd49eb",
+      "id": "132c7634-984f-435d-bee4-dca3875c14ea",
       "name": "DETECTOR"
     },
     {
@@ -284,7 +284,7 @@
         -1024,
         1408
       ],
-      "id": "c5f94592-4f34-4f40-8324-d29316b45b0f",
+      "id": "dc3f0241-c1eb-4e8e-950a-3154c282edf6",
       "name": "OpenRouter Chat Model1",
       "credentials": {
         "openRouterApi": {
@@ -304,7 +304,7 @@
         -768,
         1408
       ],
-      "id": "1aaa6ca2-8a70-4036-be8e-04e5b8b59f21",
+      "id": "2780fef6-8ef5-4d6d-937c-7eacf42fef4d",
       "name": "Structured Output Parser2"
     },
     {
@@ -320,7 +320,7 @@
         800,
         1440
       ],
-      "id": "ea602b42-0a9c-413a-bfbb-6515dc5c552b",
+      "id": "f3059371-33ab-4399-80d9-f9c897476f5a",
       "name": "OpenRouter Chat Model2",
       "credentials": {
         "openRouterApi": {
@@ -340,7 +340,7 @@
         1072,
         1440
       ],
-      "id": "5e0b555f-dcb1-4f2f-b876-7d808ddb948a",
+      "id": "7e9c5924-04cb-476e-b436-35d7e61ed3e1",
       "name": "Structured Output Parser3"
     },
     {
@@ -356,7 +356,7 @@
         -256,
         736
       ],
-      "id": "111dbfc2-1290-4d20-b754-5661a318d03e",
+      "id": "29485d95-e887-4f83-877c-50fc0f9a4dfb",
       "name": "CORRECTOR-CHROMA",
       "retryOnFail": true,
       "maxTries": 5
@@ -374,7 +374,7 @@
         848,
         1216
       ],
-      "id": "f4b149f5-493b-4d9d-bea2-ded405c94efd",
+      "id": "8b0a0663-0608-4398-b52f-2eb175795d47",
       "name": "CORRECTOR-SERPER"
     },
     {
@@ -408,7 +408,7 @@
         -576,
         1200
       ],
-      "id": "c388c045-d752-4631-8e0a-192ce6c2f149",
+      "id": "a460652f-d420-491a-9687-829c5b3d00d0",
       "name": "If2"
     },
     {
@@ -421,7 +421,7 @@
         -1232,
         1040
       ],
-      "id": "56c44bcb-9190-4568-8aec-e1024d74b345",
+      "id": "0ef11c16-dbe1-4110-81e0-2f33bde51af7",
       "name": "Code in JavaScript11"
     },
     {
@@ -434,7 +434,7 @@
         -1776,
         704
       ],
-      "id": "e5ad3242-6b66-4e4a-8cb2-833dbc4ccf28",
+      "id": "361f0be9-9729-4667-8e80-2036a346efbd",
       "name": "Loop Over Items5"
     },
     {
@@ -477,7 +477,7 @@
         736,
         736
       ],
-      "id": "8364afca-4b75-47e3-86f3-fdb0408ae083",
+      "id": "09bee83d-6d61-42ef-bbb5-db17b41134bf",
       "name": "If4"
     },
     {
@@ -490,7 +490,7 @@
         1408,
         720
       ],
-      "id": "9567fddc-cdda-491c-9256-ae9e9c2ad6cd",
+      "id": "3a29e962-1ae3-4673-8236-953b77c3911b",
       "name": "FORMATEADOR"
     },
     {
@@ -505,7 +505,7 @@
         -1312,
         352
       ],
-      "id": "b67d55b3-31b0-415a-9436-1feff0388a34",
+      "id": "9eaaa6e4-a581-440f-b338-8ff2f44c5586",
       "name": "Aggregate1"
     },
     {
@@ -521,7 +521,7 @@
         240,
         736
       ],
-      "id": "5740fc80-7d70-4050-bc46-fbdcf49fc1f5",
+      "id": "5e5c75b6-a8d5-42b6-8c91-5b75c663299e",
       "name": "COMPROBADOR",
       "retryOnFail": true
     },
@@ -538,7 +538,7 @@
         240,
         976
       ],
-      "id": "de214346-2b35-445c-9a1f-c9862b247326",
+      "id": "30032180-0230-463f-893f-391fbda96526",
       "name": "OpenRouter Chat Model3",
       "credentials": {
         "openRouterApi": {
@@ -557,7 +557,7 @@
         1296,
         1216
       ],
-      "id": "cfe810e3-e2ad-4c39-b469-2fee53cfe21f",
+      "id": "11dff704-e65b-487e-bdf3-4eb6a18994d3",
       "name": "GUARDAR EN CHROMA"
     },
     {
@@ -573,7 +573,7 @@
         1536,
         1440
       ],
-      "id": "0ea78c1f-f7bb-4ff3-8a59-d54864f689b9",
+      "id": "dd4810bf-2c73-4dd8-9195-be050d9df687",
       "name": "OpenRouter Chat Model5",
       "credentials": {
         "openRouterApi": {
@@ -594,7 +594,7 @@
         1536,
         1216
       ],
-      "id": "a9131508-f34f-4c18-8cfa-dbebd87e93d5",
+      "id": "507b6b30-8ea3-49b6-beb9-54a3d56dd39c",
       "name": "GUARDAR EN CHROMA1",
       "retryOnFail": true,
       "maxTries": 5
@@ -615,7 +615,7 @@
         1680,
         1488
       ],
-      "id": "c2f2ecd0-9e37-42a4-8461-1d061ef8a633",
+      "id": "6a470c28-2b79-4632-a996-e6b84becd556",
       "name": "insert_chroma"
     },
     {
@@ -631,7 +631,7 @@
         -3824,
         336
       ],
-      "id": "d4a1efb9-206d-4a62-9271-65e3db530706",
+      "id": "9df636ec-c489-4185-8ccf-c671caac252d",
       "name": "Webhook1",
       "webhookId": "8580588c-7ad5-4b9e-be2e-e0bb9c38237b"
     },
@@ -645,7 +645,7 @@
         -3616,
         336
       ],
-      "id": "a1466193-7132-4500-8e89-fdcf64834bb4",
+      "id": "dc87129f-9d35-4006-8ec3-2dbe44d6e399",
       "name": "Code in JavaScript"
     },
     {
@@ -658,7 +658,7 @@
         -3408,
         336
       ],
-      "id": "52118164-e93d-4a6e-837e-5be69410bcfa",
+      "id": "ace65aa5-d1c6-4c61-ac77-6fd57464cb08",
       "name": "Loop Over Items"
     },
     {
@@ -671,7 +671,7 @@
         -3072,
         400
       ],
-      "id": "6e2b7608-99c0-4857-8ba0-a91bf09df5cb",
+      "id": "d3bca808-4dc0-4591-a777-f31c339e1148",
       "name": "Code in JavaScript4"
     },
     {
@@ -684,7 +684,7 @@
         -2800,
         400
       ],
-      "id": "37cc51fd-244a-4508-b760-91d1c9700771",
+      "id": "1a86fb6f-613f-4ed5-9818-fa263f6a8279",
       "name": "Execute Command"
     },
     {
@@ -697,7 +697,7 @@
         -2560,
         400
       ],
-      "id": "a5bab03c-0353-4961-b513-89ee9c3f909d",
+      "id": "e08a6d6d-72bd-4386-bd7c-d4302c0f19e9",
       "name": "Code in JavaScript5"
     },
     {
@@ -710,7 +710,7 @@
         -128,
         464
       ],
-      "id": "72f8005d-e1f0-473f-aef4-dd08ee4802a9",
+      "id": "78f3613d-8a4a-4f84-ae58-00ff787e651b",
       "name": "Loop Over Items2"
     },
     {
@@ -725,7 +725,7 @@
         432,
         480
       ],
-      "id": "229737c3-bc43-428b-98d7-d799d219a869",
+      "id": "aff83616-e422-4b36-bcec-99d4fd6d86c6",
       "name": "Read/Write Files from Disk2"
     },
     {
@@ -738,7 +738,7 @@
         176,
         480
       ],
-      "id": "9fbda882-815d-4ce0-ab31-b7bb30fc0833",
+      "id": "a4b708be-0acf-4725-91ec-35f823c7cdb6",
       "name": "Code in JavaScript15"
     },
     {
@@ -751,7 +751,7 @@
         -1536,
         960
       ],
-      "id": "c93118d1-fb68-4013-a7d4-e63074e0ee29",
+      "id": "31578129-5601-4049-87d8-5c16424933a4",
       "name": "Code in JavaScript1"
     },
     {
@@ -766,7 +766,7 @@
         -896,
         1456
       ],
-      "id": "a75b0cef-3c65-45c1-8ed6-fd4c7c497021",
+      "id": "69e63cf2-ca4d-4c3d-bd50-1fef5320b362",
       "name": "Simple Memory"
     },
     {
@@ -781,7 +781,7 @@
         352,
         1088
       ],
-      "id": "68db01f1-dfc3-4732-9db6-a2391d7857fc",
+      "id": "203c0a44-1719-49f5-803f-55e16a74ceaf",
       "name": "Simple Memory1"
     },
     {
@@ -815,7 +815,7 @@
         -1008,
         352
       ],
-      "id": "4cf5ed1e-4aaa-4bd2-9f11-3ecf41ad5df0",
+      "id": "a5f5a8d6-198f-464c-ba33-ae5b3a055456",
       "name": "If"
     },
     {
@@ -828,7 +828,7 @@
         -480,
         464
       ],
-      "id": "f2f4b496-312e-4814-bbd7-61f4099cbf25",
+      "id": "03be04d8-c19e-48fc-b0c9-67ae1fa37235",
       "name": "Code in JavaScript13"
     },
     {
@@ -839,7 +839,7 @@
         -2272,
         336
       ],
-      "id": "95fb2200-f84b-472c-821d-ad4607c949a3",
+      "id": "d866e8d3-78da-41f8-9e84-9113220c607a",
       "name": "Merge"
     },
     {
@@ -853,7 +853,7 @@
         416,
         944
       ],
-      "id": "072afc2d-a6e4-4e27-9149-1602f44d7b57",
+      "id": "2199933b-ddb2-432b-b8eb-a6ed4ef428f9",
       "name": "Structured Output Parser1"
     },
     {
@@ -866,7 +866,7 @@
         448,
         0
       ],
-      "id": "59d0286c-349d-4d11-b4e4-89f90879efc0",
+      "id": "682bafec-01d7-41c3-bd36-2b8850c2333c",
       "name": "REPORT"
     },
     {
@@ -879,7 +879,7 @@
         176,
         336
       ],
-      "id": "bf522e9b-01d8-4478-9d15-313e094664bb",
+      "id": "e7fc2cf0-3a7f-4938-a0bf-4c32564a6a86",
       "name": "REPORT2"
     }
   ],
@@ -1523,10 +1523,10 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "ee18c46d-3cb7-4e93-9d53-91a3c5763ac4",
+  "versionId": "2fb0cfb1-825a-47f6-a57b-077935526548",
   "meta": {
     "instanceId": "75af844b993f15f935c9b4383bfc56f71df20a6a1f0b7d83cd483977774256d8"
   },
-  "id": "TL89PXqBidOm73zm",
+  "id": "oN0eQkFCRndzy6x4",
   "tags": []
 }
