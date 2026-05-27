@@ -77,7 +77,7 @@ npm --version
 ### 3. Install n8n globally
 
 ```bash
-npm install n8n -g
+npm install -g n8n@1.120.4
 ```
 
 ### 4. Start n8n
